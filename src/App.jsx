@@ -7,7 +7,7 @@ function App() {
     <Router>
       <Routes>
         {routes.map((route) => (
-          <Route key={route.path} path={route.path} element={<route.component />} />
+          <Route key={route.path} path={route.path} element={React.createElement(route.component)} />
         ))}
       </Routes>
     </Router>

@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function MainDashboard({ navigate }) {
+function MainDashboard() {
+  const navigate = useNavigate();
+
   return (
     <div style={{ padding: '20px', textAlign: 'center' }}>
       <h1>Welcome to Comparator</h1>
