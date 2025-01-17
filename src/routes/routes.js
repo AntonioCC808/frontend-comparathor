@@ -1,9 +1,9 @@
-import MainDashboard from './components/MainDashboard';
-import Configuration from './components/Configuration';
-import MyProducts from './components/MyProducts';
-import MyComparisons from './components/MyComparisons';
-import AddProduct from './components/AddProduct';
-import AddComparison from './components/AddComparison';
+import MainDashboard from '../components/MainDashboard';
+import Configuration from '../components/Configuration';
+import MyProducts from '../components/MyProducts';
+import MyComparisons from '../components/MyComparisons';
+import AddProduct from '../components/AddProduct';
+import AddComparison from '../components/AddComparison';
 
 const routes = [
   { path: '/', component: MainDashboard },
