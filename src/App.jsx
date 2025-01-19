@@ -1,16 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./components/Header"; // Import Header
-import routes from "./routes/routes"; // Import routes configuration
+import routes from "./routes/routes"; // Import your routes array
+import ProtectedRoute from "./components/ProtectedRoute";
+import Header from "./components/Header";
+import Login from "./components/Login";
+import SignUp from "./components/SignUp";
+import MainDashboard from "./components/MainDashboard";
+
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem("isAuthenticated") === "true"
+  );
+
   return (
     <Router>
-      <Header username="CuadradoT" />
+      {isAuthenticated && <Header username="User" />} {/* Show header only when authenticated */}
       <Routes>
-        {routes.map(({ path, component: Component }) => (
-          <Route key={path} path={path} element={<Component />} />
-        ))}
+        <Route
+          path="/"
+          element={<Login setIsAuthenticated={setIsAuthenticated} />}
+        />
+        <Route
+          path="/signup"
+          element={<SignUp />}
+        />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <MainDashboard />
+            </ProtectedRoute>
+          }
+        />
+        {routes
+          .filter(({ path }) => path !== "/home") // Skip '/home' since it's already handled
+          .map(({ path, component: Component }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <Component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
       </Routes>
     </Router>
   );
