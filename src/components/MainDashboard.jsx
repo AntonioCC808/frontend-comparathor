@@ -1,69 +1,74 @@
-import React from 'react';
-import { Box, Button, Typography, Container, Grid2 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { Box, Typography, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import "../styles/Dashboard.css"; // Use the updated styles
+import productsImage from "../assets/products-menu.png";
+import comparisonsImage from "../assets/comparisons-menu.png";
+import addProductImage from "../assets/add_product-menu.png";
+import addComparisonImage from "../assets/add_comparison-menu.png";
+
+const dashboardOptions = [
+  {
+    title: "My Products",
+    description: "View and manage your products.",
+    image: productsImage,
+    route: "/products",
+  },
+  {
+    title: "My Comparisons",
+    description: "View and analyze your product comparisons.",
+    image: comparisonsImage,
+    route: "/comparisons",
+  },
+  {
+    title: "Add Product",
+    description: "Add a new product to your collection.",
+    image: addProductImage,
+    route: "/addProduct",
+  },
+  {
+    title: "Add Comparison",
+    description: "Create a new comparison between products.",
+    image: addComparisonImage,
+    route: "/addComparison",
+  },
+];
 
 function MainDashboard() {
   const navigate = useNavigate();
 
   return (
-      <Container maxWidth="md">
-        <Box mt={4}>
-          <Typography variant="h4" gutterBottom align="center">
-            Welcome to Comparathor
-          </Typography>
-        </Box>
-        <Grid2 container spacing={4}>
-          <Grid2 item xs={12} sm={6}>
-            <Button
-              variant="contained"
-              fullWidth
-              size="large"
-              onClick={() => navigate('/products')}
-            >
-              My Products
-            </Button>
-          </Grid2>
-          <Grid2 item xs={12} sm={6}>
-            <Button
-              variant="contained"
-              fullWidth
-              size="large"
-              onClick={() => navigate('/comparisons')}
-            >
-              My Comparisons
-            </Button>
-          </Grid2>
-          <Grid2 item xs={12} sm={6}>
-            <Button
-              variant="contained"
-              fullWidth
-              size="large"
-              onClick={() => navigate('/addProduct')}
-            >
-              Add New Product
-            </Button>
-          </Grid2>
-          <Grid2 item xs={12} sm={6}>
-            <Button
-              variant="contained"
-              fullWidth
-              size="large"
-              onClick={() => navigate('/addComparison')}
-            >
-              Add New Comparison
-            </Button>
-          </Grid2>
-        </Grid2>
-        <Box textAlign="center" mt={4}>
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={() => navigate('/config')}
+    <Box>
+      {/* App Introduction */}
+      <Box className="dashboard-intro">
+        <h1>Welcome to Comparathor!</h1>
+        <p>
+          The ultimate tool to compare and manage your products, analyze comparisons,
+          and customize your preferences. Simplify your decision-making process with ease!
+        </p>
+      </Box>
+
+      {/* Dashboard Options */}
+      <Box className="dashboard-container">
+        {dashboardOptions.map((option, index) => (
+          <Paper
+            key={index}
+            className="dashboard-item"
+            onClick={() => navigate(option.route)}
           >
-            Configuration
-          </Button>
-        </Box>
-      </Container>
+            <img
+              src={option.image}
+              alt={option.title}
+              className="dashboard-image"
+            />
+            <Box className="dashboard-text">
+              <Typography className="dashboard-title">{option.title}</Typography>
+              <Typography className="dashboard-description">{option.description}</Typography>
+            </Box>
+          </Paper>
+        ))}
+      </Box>
+    </Box>
   );
 }
 

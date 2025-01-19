@@ -6,47 +6,104 @@ import {
   Box,
   IconButton,
   Avatar,
-  Button,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import MenuIcon from "@mui/icons-material/Menu";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { useNavigate, useLocation } from "react-router-dom";
 import appLogo from "../assets/app-logo.svg";
 import { deepPurple } from "@mui/material/colors";
-import routes from "../routes/routes"; // Import routes configuration
 
 function Header({ username }) {
+  const navigate = useNavigate();
+  const location = useLocation(); // Get current route path
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  // Check if on the Dashboard screen
+  const isDashboard = location.pathname === "/";
+
+  // Open the menu
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Close the menu
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Navigate to a route
+  const handleMenuClick = (route) => {
+    navigate(route);
+    setAnchorEl(null);
+  };
+
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
-        {/* App Icon and Name */}
-        <Box display="flex" alignItems="center" flexGrow={1}>
-          <IconButton edge="start" color="inherit" aria-label="app logo">
-            <img src={appLogo} alt="App Logo" width="40" height="40" />
-          </IconButton>
-          <Typography variant="h6" component="div">
-            COMPARATHOR
-          </Typography>
-        </Box>
-
-        {/* Navigation Links */}
-        <Box>
-          {routes.map(({ path }) => (
-            <Button
-              key={path}
+        {/* Conditional Menu Button */}
+        {!isDashboard && (
+          <>
+            <IconButton
+              edge="start"
               color="inherit"
-              component={NavLink}
-              to={path}
-              style={({ isActive }) => ({
-                textDecoration: isActive ? "underline" : "none",
-                color: isActive ? "yellow" : "white",
-              })}
+              aria-label="menu"
+              onClick={handleMenuOpen}
             >
-              {path === "/" ? "Dashboard" : path.replace("/", "").replace(/([A-Z])/g, " $1").toUpperCase()}
-            </Button>
-          ))}
+              <MenuIcon />
+            </IconButton>
+
+            {/* Dropdown Menu */}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={() => handleMenuClick("/")}>Home</MenuItem>
+              <MenuItem onClick={() => handleMenuClick("/products")}>
+                My products
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuClick("/comparisons")}>
+                My commparisons
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuClick("/addProduct")}>
+                Add new product
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuClick("/addComparison")}>
+                Add new comparison
+              </MenuItem>
+            </Menu>
+          </>
+        )}
+
+        {/* Logo */}
+        <Box display="flex" alignItems="center" flexGrow={1} marginLeft={!isDashboard ? 2 : 0}>
+          <img src={appLogo} alt="App Logo" width="60" height="auto" />
+          <Typography
+        variant="h4" // Larger and bold text
+        component="div"
+        sx={{
+          fontFamily: "'Lobster', cursive",
+          marginLeft: 1, // Space between the logo and text
+          color: "white", // Ensure the text is visible on the AppBar
+        }}
+      >
+        Comparathor
+      </Typography>
         </Box>
 
-        {/* User Icon and Name */}
-        <Box display="flex" alignItems="center" marginLeft={2}>
+        {/* Configuration Icon and User Info */}
+        <Box display="flex" alignItems="center">
+          <IconButton
+            edge="end"
+            color="inherit"
+            aria-label="settings"
+            onClick={() => navigate("/config")}
+            sx={{ marginRight: 2 }}
+          >
+            <SettingsIcon />
+          </IconButton>
           <Avatar sx={{ bgcolor: deepPurple[500], marginRight: 1 }}>
             {username ? username[0].toUpperCase() : "U"}
           </Avatar>
