@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,11 +8,43 @@ import {
   ListItemText,
   IconButton,
   Container,
-} from '@mui/material';
-import { Edit, Delete, Add } from '@mui/icons-material';
+} from "@mui/material";
+import { Edit, Delete, Add } from "@mui/icons-material";
+import ProductModal from "./ProductModal";
+import { fetchProducts, deleteProduct } from "../api/products";
 
 function MyProducts() {
-  const products = ["Product 1", "Product 2"]; // Example product list
+  const [products, setProducts] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch products on component load
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const productsData = await fetchProducts();
+        setProducts(productsData);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  // Handle adding a new product
+  const handleAddProduct = (newProduct) => {
+    setProducts([...products, newProduct]);
+    setIsModalOpen(false);
+  };
+
+  // Handle deleting a product
+  const handleDelete = async (productId) => {
+    try {
+      await deleteProduct(productId);
+      setProducts(products.filter((product) => product.id !== productId));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
 
   return (
     <Container maxWidth="sm">
@@ -20,21 +52,26 @@ function MyProducts() {
         My Products
       </Typography>
       <List>
-        {products.map((product, index) => (
+        {products.map((product) => (
           <ListItem
-            key={index}
+            key={product.id}
             secondaryAction={
               <>
                 <IconButton edge="end" aria-label="edit" color="primary">
                   <Edit />
                 </IconButton>
-                <IconButton edge="end" aria-label="delete" color="error">
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  color="error"
+                  onClick={() => handleDelete(product.id)}
+                >
                   <Delete />
                 </IconButton>
               </>
             }
           >
-            <ListItemText primary={product} />
+            <ListItemText primary={product.name} />
           </ListItem>
         ))}
       </List>
@@ -44,10 +81,17 @@ function MyProducts() {
           color="primary"
           startIcon={<Add />}
           size="large"
+          onClick={() => setIsModalOpen(true)}
         >
           Add Product
         </Button>
       </Box>
+      {/* Add ProductModal */}
+      <ProductModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onProductAdded={handleAddProduct}
+      />
     </Container>
   );
 }
