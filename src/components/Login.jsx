@@ -5,13 +5,18 @@ import { login, setAuthToken } from "../api/auth";
 import { Box, TextField, Button, Typography, Link, InputAdornment, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
+// Define PropTypes for the Login component
+Login.propTypes = {
+  setIsAuthenticated: PropTypes.func.isRequired,
+};
+
 function Login({ setIsAuthenticated }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const from = location.state?.from?.pathname || "/home";
 
   const handleLogin = async () => {
     try {
@@ -62,10 +67,5 @@ function Login({ setIsAuthenticated }) {
     </Box>
   );
 }
-
-// Define PropTypes for the Login component
-Login.propTypes = {
-  setIsAuthenticated: PropTypes.func.isRequired,
-};
 
 export default Login;

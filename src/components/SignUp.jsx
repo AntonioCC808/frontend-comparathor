@@ -68,7 +68,7 @@ function SignUp() {
         </Button>
         <Typography variant="body2" align="center" marginTop={2}>
           Already have an account?{" "}
-          <Link href="#" onClick={() => navigate("/login")} underline="hover">
+          <Link href="#" onClick={() => navigate("/")} underline="hover">
             Log In
           </Link>
         </Typography>
