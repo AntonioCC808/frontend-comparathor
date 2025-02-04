@@ -13,9 +13,15 @@ function App() {
     localStorage.getItem("isAuthenticated") === "true"
   );
 
+  const handleAuthChange = (authState) => {
+    setIsAuthenticated(authState);
+    localStorage.setItem("isAuthenticated", authState);
+  };
+
+
   return (
     <Router>
-      {isAuthenticated && <Header username="User" />} {/* Show header only when authenticated */}
+       {isAuthenticated && <Header username="User" onLogout={() => handleAuthChange(false)} />}
       <Routes>
         <Route
           path="/"
