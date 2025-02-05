@@ -10,8 +10,19 @@ export const login = async (email, password) => {
 };
 
 // Register API call
-export const register = async (email, password, role = "user") => {
-  await axios.post(`${API_BASE_URL}/register`, { email, password, role });
+export const register = async (user_id, email, password, role = "user") => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/register`, {
+      user_id,
+      email,
+      password,
+      role,
+    });
+    return response.data; // Return API response data
+  } catch (error) {
+    console.error("❌ API Register Error:", error.response?.data || error.message);
+    throw error; // Throw error so `handleSignUp` catches it
+  }
 };
 
 // Set Auth Token in Axios Headers

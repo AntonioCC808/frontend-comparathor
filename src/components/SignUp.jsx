@@ -1,31 +1,81 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
-import { Box, TextField, Button, Typography, Link, InputAdornment, IconButton } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Link,
+  InputAdornment,
+  IconButton,
+  MenuItem,
+  Alert,
+} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-
 function SignUp() {
+  const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("user");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errors, setErrors] = useState({}); // Object to track field errors
+
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
+    setErrors({});
+    setSuccessMessage(null);
+  
+    let newErrors = {};
+  
+    // Basic validation before sending API request
+    if (!userId) newErrors.userId = "User ID is required.";
+    if (!email) newErrors.email = "Email is required.";
+    if (!password) newErrors.password = "Password is required.";
+    if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match.";
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+  
     try {
-      await register(email, password);
-      alert("Registration successful! Please log in.");
-      navigate("/");
+      await register(userId, email, password, role);
+      setSuccessMessage("✅ Registration successful! Redirecting to login...");
+      setTimeout(() => navigate("/"), 3000);
     } catch (error) {
-      console.error("Registration error:", error.response?.data?.detail || error.message);
-      alert("Error during registration. Please try again.");
+      console.error("❌ Registration Error:", error.response?.data);
+  
+      let fieldErrors = {};
+  
+      const apiErrors = error.response?.data.detail;
+      console.log("🔍 API Error Detail:", apiErrors);
+  
+      if (typeof apiErrors === "string") {
+        // ✅ Backend sent a single error message
+        fieldErrors.general = apiErrors;
+      } else if (Array.isArray(apiErrors)) {
+        // ✅ Backend sent multiple validation errors
+        apiErrors.forEach((err) => {
+          console.log("🔹 Processing Error:", err);
+  
+          if (err.loc?.includes("User ID")) fieldErrors.userId = err.msg;
+          if (err.loc?.includes("Email")) fieldErrors.email = err.msg;
+          if (err.loc?.includes("email")) fieldErrors.email = err.msg;
+          if (err.loc?.includes("password")) fieldErrors.password = err.msg;
+        });
+      } else {
+        fieldErrors.general = "Unexpected error occurred. Please try again.";
+      }
+  
+      setErrors(fieldErrors);
     }
   };
+  
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" bgcolor="#f4f4f9">
@@ -36,10 +86,62 @@ function SignUp() {
         <Typography variant="body1" gutterBottom align="center">
           Sign up to start using Comparathor
         </Typography>
-        <TextField label="Email" type="email" fullWidth margin="normal" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <TextField label="Password" type={showPassword ? "text" : "password"} fullWidth margin="normal" value={password} onChange={(e) => setPassword(e.target.value)}
-        slotProps={{
-          input: {
+
+        {successMessage && (
+          <Alert severity="success" sx={{ marginBottom: 2 }}>
+            {successMessage}
+          </Alert>
+        )}
+
+        {errors.general && (
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+            {errors.general}
+          </Alert>
+        )}
+
+        <TextField
+          label="User ID"
+          fullWidth
+          margin="normal"
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          error={Boolean(errors.userId)}
+          helperText={errors.userId}
+        />
+
+        <TextField
+          label="Email"
+          type="email"
+          fullWidth
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={Boolean(errors.email)}
+          helperText={errors.email}
+        />
+
+        <TextField
+          select
+          label="Role"
+          fullWidth
+          margin="normal"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
+          <MenuItem value="user">User</MenuItem>
+          <MenuItem value="admin">Admin</MenuItem>
+        </TextField>
+
+        <TextField
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          fullWidth
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={Boolean(errors.password)}
+          helperText={errors.password}
+          InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
@@ -47,12 +149,19 @@ function SignUp() {
                 </IconButton>
               </InputAdornment>
             ),
-          },
-        }}
+          }}
         />
-        <TextField label="Confirm Password" type={showPassword ? "text" : "password"} fullWidth margin="normal" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-        slotProps={{
-          input: {
+
+        <TextField
+          label="Confirm Password"
+          type={showPassword ? "text" : "password"}
+          fullWidth
+          margin="normal"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          error={Boolean(errors.confirmPassword)}
+          helperText={errors.confirmPassword}
+          InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
@@ -60,12 +169,13 @@ function SignUp() {
                 </IconButton>
               </InputAdornment>
             ),
-          },
-        }}
+          }}
         />
+
         <Button variant="contained" color="primary" fullWidth onClick={handleSignUp} sx={{ marginTop: 2 }}>
           Sign Up
         </Button>
+
         <Typography variant="body2" align="center" marginTop={2}>
           Already have an account?{" "}
           <Link href="#" onClick={() => navigate("/")} underline="hover">
@@ -76,8 +186,5 @@ function SignUp() {
     </Box>
   );
 }
-
-// Define PropTypes for the SignUp component
-SignUp.propTypes = {};
 
 export default SignUp;
