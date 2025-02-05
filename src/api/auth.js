@@ -5,8 +5,15 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + "/auth";
 
 // Login API call
 export const login = async (email, password) => {
-  const response = await axios.post(`${API_BASE_URL}/login`, { email, password });
-  return response.data; // Response includes access_token and token_type
+  try {
+    const response = await axios.post(`${API_BASE_URL}/login`, { email, password });
+    return response.data; // ✅ Successful login returns token
+  } catch (error) {
+    console.error("❌ API Login Error:", error.response?.data || error.message);
+
+    // Throw error details so `handleLogin` can catch them
+    throw error;
+  }
 };
 
 // Register API call
