@@ -5,7 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
-import MainDashboard from "./components/MainDashboard";
+import Home from "./components/Home";
 
 
 function App() {
@@ -35,7 +35,7 @@ function App() {
           path="/home"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <MainDashboard />
+              <Home />
             </ProtectedRoute>
           }
         />

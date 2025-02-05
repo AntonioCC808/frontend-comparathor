@@ -34,7 +34,7 @@ const dashboardOptions = [
   },
 ];
 
-function MainDashboard() {
+function Home() {
   const navigate = useNavigate();
 
   return (
@@ -72,4 +72,4 @@ function MainDashboard() {
   );
 }
 
-export default MainDashboard;
+export default Home;
