@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import "../styles/Dashboard.css"; // Use the updated styles
+import "../styles/Home.css"; // Use the updated styles
 import productsImage from "../assets/products-menu.png";
 import comparisonsImage from "../assets/comparisons-menu.png";
 import addProductImage from "../assets/add_product-menu.png";

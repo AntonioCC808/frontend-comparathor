@@ -122,10 +122,9 @@ function MyProducts() {
         <Dialog open={Boolean(selectedProduct)} onClose={handleCloseModal}>
           <DialogTitle>Product Details</DialogTitle>
           <DialogContent>
-            <Typography variant="h6">{selectedProduct.name}</Typography>
-            <Typography variant="subtitle1">Brand: {selectedProduct.brand}</Typography>
+            <Typography variant="h6"><b>{selectedProduct.name}</b></Typography>
+            <Typography variant="subtitle1">{selectedProduct.brand}</Typography>
             <Typography variant="subtitle1">Score: {selectedProduct.score}</Typography>
-            <Typography variant="h6" mt={2}>Attributes:</Typography>
             {selectedProduct.product_metadata.length > 0 ? (
               <Table size="small">
                 <TableHead>
