@@ -1,0 +1,37 @@
+import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + "/auth";
+
+// ✅ Fetch Current User Settings
+export const fetchUserSettings = async () => {
+    try {
+        const token = localStorage.getItem("access_token"); // Get stored token
+        if (!token) throw new Error("No authentication token found");
+
+        const response = await axios.get(`${API_BASE_URL}/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("❌ API Fetch User Error:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+// ✅ Update User Settings
+export const updateUserSettings = async (userData) => {
+    try {
+        const token = localStorage.getItem("access_token");
+        if (!token) throw new Error("No authentication token found");
+
+        const response = await axios.put(`${API_BASE_URL}/update`, userData, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("❌ API Update User Error:", error.response?.data || error.message);
+        throw error;
+    }
+};

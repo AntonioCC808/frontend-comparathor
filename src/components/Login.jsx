@@ -14,11 +14,6 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-// Define PropTypes for the Login component
-Login.propTypes = {
-  setIsAuthenticated: PropTypes.func.isRequired,
-};
-
 function Login({ setIsAuthenticated }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,19 +27,23 @@ function Login({ setIsAuthenticated }) {
     setErrors({}); // Reset errors before request
   
     try {
-      const { access_token, user_id } = await login(email, password);
+      const response = await login(email, password); // Call API
+      const { access_token, user_id, role } = response; // Destructure only what API returns
+  
+      // Store authentication details
       localStorage.setItem("access_token", access_token);
-      localStorage.setItem("user_id", user_id); // ✅ Store user_id
+      localStorage.setItem("user", JSON.stringify({ user_id, email, role }));
+  
       setAuthToken(access_token);
-      setIsAuthenticated(true, user_id); // ✅ Pass user_id correctly
-      
-      console.log("🚀 Login successful! Redirecting to /home", { user_id });
+      setIsAuthenticated(true, { user_id, email, role });
+  
+      console.log("🚀 Login successful! Redirecting to '/home'", { user_id, email, role });
       navigate("/home");
     } catch (error) {
       console.error("❌ Login error:", error);
   
       let fieldErrors = {};
-      
+  
       if (Array.isArray(error)) {
         error.forEach((err) => {
           if (err.loc?.includes("email")) fieldErrors.email = err.msg;
@@ -120,5 +119,9 @@ function Login({ setIsAuthenticated }) {
     </Box>
   );
 }
+
+Login.propTypes = {
+  setIsAuthenticated: PropTypes.func.isRequired,
+};
 
 export default Login;

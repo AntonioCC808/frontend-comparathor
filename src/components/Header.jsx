@@ -90,15 +90,6 @@ function Header({ username }) {
 
         {/* Configuration Icon and User Menu */}
         <Box display="flex" alignItems="center">
-          <IconButton
-            edge="end"
-            color="inherit"
-            aria-label="settings"
-            onClick={() => navigate("/config")}
-            sx={{ marginRight: 2 }}
-          >
-            <SettingsIcon />
-          </IconButton>
           <UserMenu username={username} />
         </Box>
       </Toolbar>

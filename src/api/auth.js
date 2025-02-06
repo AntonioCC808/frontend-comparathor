@@ -36,3 +36,22 @@ export const register = async (user_id, email, password, role = "user") => {
 export const setAuthToken = (token) => {
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
+
+
+// Get Current User API
+export const getCurrentUser = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/me`);
+    return response.data; // Returns user details { user_id, email, role }
+  } catch (error) {
+    console.error("❌ API Get Current User Error:", error.response?.data || error.message);
+    throw error; // Handle expired token or unauthorized access
+  }
+};
+
+// Logout Function (Clears LocalStorage & Auth Headers)
+export const logout = () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user");
+  delete axios.defaults.headers.common["Authorization"];
+};

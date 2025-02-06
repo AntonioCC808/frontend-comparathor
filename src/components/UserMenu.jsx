@@ -17,12 +17,25 @@ const UserMenu = ({ username }) => {
     setAnchorEl(null);
   };
 
-  // Handle log out
-  const handleLogout = () => {
-    localStorage.clear(); // Clear all stored data
-    navigate("/"); // Redirect to login page
-    handleMenuClose(); // Close the menu
+  const handleProfileClick = () => {
+    navigate("/config"); // ✅ Navigate to settings page
+    handleMenuClose();
   };
+
+  const handleLogout = () => {
+    console.log("Logging out...");
+  
+    // ✅ Clear authentication data
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user_id");
+  
+    // ✅ Navigate to login page
+    navigate("/");
+  
+    // ✅ Close the menu
+    handleMenuClose();
+  };
+  
 
   return (
     <>
@@ -36,8 +49,11 @@ const UserMenu = ({ username }) => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
-        <MenuItem onClick={handleLogout}>Log Out</MenuItem>
+        <MenuItem disabled>
+          <Typography variant="body1">Hi, {username}</Typography>
+        </MenuItem>
+        <MenuItem onClick={handleProfileClick}>Profile Settings</MenuItem> {/* ✅ Profile Button */}
+        <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
       <Typography variant="body1" component="div" sx={{ marginLeft: 1 }}>
         {username || "Guest"}

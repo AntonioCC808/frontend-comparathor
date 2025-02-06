@@ -1,39 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import routes from "./routes/routes"; // Import your routes array
+import routes from "./routes/routes";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 import Home from "./components/Home";
+import { getCurrentUser, logout } from "./api/auth";
 
 function App() {
-  const [userId, setUserId] = useState(localStorage.getItem("user_id") || "");
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || null);
 
-  const handleAuthChange = (authState, userId = "") => {
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          localStorage.setItem("user", JSON.stringify(currentUser));
+        } else {
+          logout();
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        logout();
+      }
+    };
+
+    if (!user) {
+      fetchUser();
+    }
+  }, []);
+
+  const handleAuthChange = (authState, userData = null) => {
     if (authState) {
-      setUserId(userId);
-      localStorage.setItem("user_id", userId);
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
     } else {
-      setUserId("");
-      localStorage.removeItem("user_id");
+      setUser(null);
+      logout();
     }
   };
 
   return (
     <Router>
-      <AppContent userId={userId} handleAuthChange={handleAuthChange} />
+      <AppContent user={user} handleAuthChange={handleAuthChange} />
     </Router>
   );
 }
 
-function AppContent({ userId, handleAuthChange }) {
+function AppContent({ user, handleAuthChange }) {
   const location = useLocation();
   const isAuthPage = location.pathname === "/" || location.pathname === "/signup";
 
   return (
     <>
-      {!isAuthPage && <Header username={userId} onLogout={() => handleAuthChange(false)} />}
+      {!isAuthPage && user && <Header username={user.user_id} onLogout={() => handleAuthChange(false)} />}
 
       <Routes>
         <Route path="/" element={<Login setIsAuthenticated={handleAuthChange} />} />
@@ -41,19 +63,19 @@ function AppContent({ userId, handleAuthChange }) {
         <Route
           path="/home"
           element={
-            <ProtectedRoute isAuthenticated={Boolean(userId)}>
+            <ProtectedRoute isAuthenticated={Boolean(user)}>
               <Home />
             </ProtectedRoute>
           }
         />
         {routes
-          .filter(({ path }) => path !== "/home") // Skip '/home' since it's already handled
+          .filter(({ path }) => path !== "/home")
           .map(({ path, component: Component }) => (
             <Route
               key={path}
               path={path}
               element={
-                <ProtectedRoute isAuthenticated={Boolean(userId)}>
+                <ProtectedRoute isAuthenticated={Boolean(user)}>
                   <Component />
                 </ProtectedRoute>
               }
