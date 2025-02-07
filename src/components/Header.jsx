@@ -9,7 +9,6 @@ import {
   MenuItem,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import SettingsIcon from "@mui/icons-material/Settings";
 import { useNavigate, useLocation } from "react-router-dom";
 import appLogo from "../assets/app-logo.svg";
 import UserMenu from "./UserMenu"; // Import the new component
@@ -79,7 +78,7 @@ function Header({ username }) {
             variant="h4"
             component="div"
             sx={{
-              fontFamily: "'Lobster', cursive",
+              fontFamily: "'Verdana', cursive",
               marginLeft: 1,
               color: "white",
             }}
