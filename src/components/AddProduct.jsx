@@ -10,7 +10,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { fetchProductTypes, createProduct } from "../api/products";
+import { fetchProductTypes, addProduct } from "../api/products";
 
 function AddProduct() {
   const [productName, setProductName] = useState("");
@@ -51,7 +51,7 @@ function AddProduct() {
         product_type: productType,
         id_user: 1, // Replace with the actual user ID if available
       };
-      const response = await createProduct(payload);
+      const response = await addProduct(payload);
       alert("Product added successfully!");
       console.log("Product added:", response);
 

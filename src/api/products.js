@@ -16,15 +16,37 @@ export const fetchProduct = async (productId) => {
 };
 
 // Create a new product
-export const createProduct = async (product) => {
-  const response = await axios.post(`${API_BASE_URL}/`, product);
-  return response.data; // Newly created product object
+export const addProduct = async (product) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/`, product);
+    return response.data; // Return newly created product data
+  } catch (error) {
+    console.error("API Add Product Error:", error.response?.data || error.message);
+    throw error;
+  }
 };
-
+// Update a product by ID
 // Update a product by ID
 export const updateProduct = async (productId, product) => {
-  const response = await axios.put(`${API_BASE_URL}/${productId}`, product);
-  return response.data; // Updated product object
+  try {
+    const response = await axios.put(`${API_BASE_URL}/${productId}`, {
+      name: product.name,
+      brand: product.brand,
+      score: product.score,
+      image_url: product.image_url,
+      product_metadata: product.product_metadata.map((meta) => ({
+        id: meta.id || null,
+        attribute: meta.attribute,
+        value: meta.value,
+        score: meta.score,
+      })),
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("API Update Error:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 // Delete a product by ID
@@ -34,6 +56,11 @@ export const deleteProduct = async (productId) => {
 
 // Fetch all product types
 export const fetchProductTypes = async () => {
-  const response = await axios.get(`${API_BASE_URL}/product-types`);
-  return response.data;
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/product-types`);
+    return response.data; // Returns [{ id, name, metadata_schema }]
+  } catch (error) {
+    console.error("Error fetching product types:", error);
+    return [];
+  }
 };
