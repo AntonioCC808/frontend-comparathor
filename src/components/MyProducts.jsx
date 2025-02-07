@@ -35,7 +35,7 @@ import ProductModal from "./ProductModal";
 
 function MyProducts() {
   const [products, setProducts] = useState([]);
-  const [productTypes, setProductTypes] = useState([]); // Store product types
+  const [productTypes, setProductTypes] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -49,15 +49,41 @@ function MyProducts() {
 
   return (
     <Container maxWidth="md">
-      <Typography variant="h4" component="h1" gutterBottom align="center">
+      {/* Title */}
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        align="center"
+        sx={{ fontWeight: "bold", mt: 3 }}
+      >
         My Products
       </Typography>
 
-      <TableContainer component={Paper} sx={{ mt: 2, borderRadius: 2, boxShadow: 3 }}>
+      {/* Product Table */}
+      <TableContainer
+        component={Paper}
+        sx={{
+          mt: 2,
+          borderRadius: 2,
+          boxShadow: 3,
+          overflow: "hidden",
+          "& tbody tr:nth-of-type(odd)": {
+            backgroundColor: "#f9f9f9", // Zebra striping (Odd rows)
+          },
+          "& tbody tr:nth-of-type(even)": {
+            backgroundColor: "white", // Zebra striping (Even rows)
+          },
+          "& tbody tr:hover": {
+            backgroundColor: "#e3f2fd", // Soft blue on hover
+            transition: "background 0.3s ease",
+          },
+        }}
+      >
         <Table>
           <TableHead sx={{ backgroundColor: "#1976d2" }}>
             <TableRow>
-              <TableCell sx={{ color: "white", fontWeight: "bold", width: "10%" }}>Image</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold", width: "10%" }}></TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Brand</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Score</TableCell>
@@ -69,14 +95,22 @@ function MyProducts() {
               <TableRow key={product.id}>
                 <TableCell>
                   <img
-                    src={product.image_url || "https://via.placeholder.com/50"}
+                    src={product.image_url || "https://picsum.photos/50"}
                     alt={product.name}
-                    style={{ width: "50px", height: "50px", borderRadius: "5px", objectFit: "cover" }}
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      borderRadius: "8px",
+                      objectFit: "cover",
+                      border: "1px solid #ddd",
+                    }}
                   />
                 </TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.brand}</TableCell>
-                <TableCell sx={{ textAlign: "center" }}>{product.score}</TableCell>
+                <TableCell sx={{ fontWeight: 500 }}>{product.name}</TableCell>
+                <TableCell sx={{ fontWeight: 500 }}>{product.brand}</TableCell>
+                <TableCell sx={{ textAlign: "center", fontWeight: 500 }}>
+                  {product.score}
+                </TableCell>
                 <TableCell sx={{ textAlign: "center" }}>
                   <Tooltip title="View Details">
                     <IconButton color="primary" onClick={() => handleViewProduct(product, setSelectedProduct, setIsInfoModalOpen)}>
@@ -100,115 +134,88 @@ function MyProducts() {
         </Table>
       </TableContainer>
 
+      {/* Add Product Button */}
+      <Box textAlign="right" mt={2}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          sx={{
+            fontSize: "16px",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            textTransform: "none",
+          }}
+          onClick={() => handleAddProduct(setSelectedProduct, setIsEditing, setIsModalOpen, setProductTypes)}
+        >
+          Add Product
+        </Button>
+      </Box>
 
-  {/* Add Product Button */}
-  <Button
-    variant="contained"
-    color="primary"
-    startIcon={<Add />}
-    onClick={() =>
-      handleAddProduct(setSelectedProduct, setIsEditing, setIsModalOpen, setProductTypes)
-    }
-  >
-    Add Product
-  </Button>
+      {/* Add Product Modal */}
+      <ProductModal
+        open={isModalOpen}
+        onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)}
+        selectedProduct={selectedProduct}
+        setSelectedProduct={setSelectedProduct}
+        productTypes={productTypes}
+        handleAttributeChange={handleAttributeChange}
+        handleSaveChanges={handleSaveChanges}
+      />
 
-  {/* Add Product Modal */}
-  <ProductModal
-    open={isModalOpen}
-    onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)}
-    selectedProduct={selectedProduct}
-    setSelectedProduct={setSelectedProduct}
-    productTypes={productTypes}
-    handleAttributeChange={handleAttributeChange}
-    handleSaveChanges={handleSaveChanges}
-  />
-{/* Info Modal */}
-<Dialog open={isInfoModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)}>
-  <DialogTitle>Product Details</DialogTitle>
-  <DialogContent>
-    {selectedProduct && (
-      <>
-        <img
-          src={selectedProduct.image_url || "https://via.placeholder.com/150"}
-          alt={selectedProduct.name}
-          style={{ width: "100%", maxHeight: "250px", objectFit: "cover", marginBottom: "10px" }}
-        />
-        <Typography variant="h6">{selectedProduct.name}</Typography>
-        <Typography variant="subtitle1">Brand: {selectedProduct.brand}</Typography>
-        <Typography variant="subtitle1">Score: {selectedProduct.score}</Typography>
-
-        {selectedProduct.product_metadata.length > 0 ? (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Attributes</Typography>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell><b>Attribute</b></TableCell>
-                  <TableCell><b>Value</b></TableCell>
-                  <TableCell><b>Score</b></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {selectedProduct.product_metadata.map((meta) => (
-                  <TableRow key={meta.id}>
-                    <TableCell>{meta.attribute}</TableCell>
-                    <TableCell>{meta.value}</TableCell>
-                    <TableCell>{meta.score}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        ) : (
-          <Typography variant="body2">No metadata available</Typography>
-        )}
-      </>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)} color="secondary">
-      Close
-    </Button>
-  </DialogActions>
-    </Dialog>
-      {/* Edit Product Modal */}
-      <Dialog open={isModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen, setIsInfoModalOpen)}>
-        <DialogTitle>{isEditing ? "Edit Product" : "Add Product"}</DialogTitle>
+      {/* Info Modal */}
+      <Dialog open={isInfoModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)}>
+        <DialogTitle>Product Details</DialogTitle>
         <DialogContent>
           {selectedProduct && (
             <>
-              <TextField label="Product Name" fullWidth margin="dense" value={selectedProduct.name} onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })} />
-              <TextField label="Brand" fullWidth margin="dense" value={selectedProduct.brand} onChange={(e) => setSelectedProduct({ ...selectedProduct, brand: e.target.value })} />
-              <TextField label="Score" fullWidth margin="dense" type="number" value={selectedProduct.score} onChange={(e) => setSelectedProduct({ ...selectedProduct, score: e.target.value })} />
-              <TextField label="Image URL" fullWidth margin="dense" value={selectedProduct.image_url || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, image_url: e.target.value })} />
+              <img
+                src={selectedProduct.image_url || "https://picsum.photos/150"}
+                alt={selectedProduct.name}
+                style={{
+                  width: "100%",
+                  maxHeight: "250px",
+                  objectFit: "cover",
+                  marginBottom: "10px",
+                  borderRadius: "8px",
+                }}
+              />
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>{selectedProduct.name}</Typography>
+              <Typography variant="subtitle1">Brand: {selectedProduct.brand}</Typography>
+              <Typography variant="subtitle1">Score: {selectedProduct.score}</Typography>
 
-              <Typography variant="h6" sx={{ mt: 2 }}>Attributes</Typography>
-              {selectedProduct.product_metadata.map((meta, index) => (
-                <Box key={meta.id} sx={{ display: "flex", gap: 2, mb: 1 }}>
-                  <TextField label="Attribute" fullWidth margin="dense" value={meta.attribute} onChange={(e) => handleAttributeChange(index, "attribute", e.target.value)} />
-                  <TextField label="Value" fullWidth margin="dense" value={meta.value} onChange={(e) => handleAttributeChange(index, "value", e.target.value)} />
-                  <TextField label="Score" fullWidth margin="dense" type="number" value={meta.score} onChange={(e) => handleAttributeChange(index, "score", e.target.value)} />
-                </Box>
-              ))}
+              {selectedProduct.product_metadata.length > 0 ? (
+                <>
+                  <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>Attributes</Typography>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell><b>Attribute</b></TableCell>
+                        <TableCell><b>Value</b></TableCell>
+                        <TableCell><b>Score</b></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedProduct.product_metadata.map((meta, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{meta.attribute}</TableCell>
+                          <TableCell>{meta.value}</TableCell>
+                          <TableCell>{meta.score}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </>
+              ) : (
+                <Typography variant="body2">No metadata available</Typography>
+              )}
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => handleCloseModals(setSelectedProduct, setIsModalOpen, setIsInfoModalOpen)} color="secondary">Cancel</Button>
-          <Button onClick={handleSaveChanges} color="primary">Save Changes</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isConfirmOpen} onClose={() => setIsConfirmOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete {productToDelete?.name}?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsConfirmOpen(false)} color="secondary">Cancel</Button>
-          <Button onClick={handleDeleteConfirmed} color="error">Delete</Button>
+          <Button onClick={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)} color="secondary">
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

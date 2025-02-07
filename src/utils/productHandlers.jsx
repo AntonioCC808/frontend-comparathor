@@ -34,16 +34,13 @@ export const handleAddProduct = async (setSelectedProduct, setIsEditing, setIsMo
   
       const defaultType = types[0]; // Default to first product type
       const metadataSchema = Array.isArray(defaultType.metadata_schema) ? defaultType.metadata_schema : [];
-
-      console.log("Selected Type:", defaultType);
-console.log("Metadata Schema:", defaultType.metadata_schema);
   
       setSelectedProduct({
         name: "",
         brand: "",
         score: "",
         image_url: "",
-        product_type: defaultType.id || "",
+        product_type:  "Select...",
         product_metadata: metadataSchema.map(attr => ({
           attribute: attr.name,
           type: attr.type,
@@ -65,10 +62,9 @@ export const handleViewProduct = (product, setSelectedProduct, setIsInfoModalOpe
 };
 
 // Close all modals
-export const handleCloseModals = (setSelectedProduct, setIsModalOpen, setIsInfoModalOpen) => {
+export const handleCloseModals = (setSelectedProduct, setIsModalOpen) => {
     setSelectedProduct(null);
     setIsModalOpen(false);
-    setIsInfoModalOpen(false);
   };
   
 

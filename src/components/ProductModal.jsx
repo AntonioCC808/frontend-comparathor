@@ -38,9 +38,6 @@ const ProductModal = ({
               (type) => type.id === parseInt(e.target.value)
             );
           
-            console.log("Selected Type:", selectedType);
-            console.log("Metadata Schema (before conversion):", selectedType.metadata_schema);
-          
             // Convert object to array of key-value pairs
             const metadataSchema = Object.entries(selectedType.metadata_schema || {}).map(([key, type]) => ({
               attribute: key,
