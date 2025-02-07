@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +8,7 @@ import {
   Button,
   MenuItem,
   Box,
+  Typography,
 } from "@mui/material";
 
 const ProductModal = ({
@@ -20,10 +21,25 @@ const ProductModal = ({
   handleSaveChanges,
 }) => {
   if (!selectedProduct) return null; // Prevents rendering empty modal
-  
+
+  // Handle Image Upload (Drag & Drop or File Input)
+  const handleImageUpload = (file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedProduct({ ...selectedProduct, image_base64: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    if (event.dataTransfer.files.length > 0) {
+      handleImageUpload(event.dataTransfer.files[0]);
+    }
+  };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Add Product</DialogTitle>
       <DialogContent>
         {/* Product Type Selector */}
@@ -37,16 +53,16 @@ const ProductModal = ({
             const selectedType = productTypes.find(
               (type) => type.id === parseInt(e.target.value)
             );
-          
-            // Convert object to array of key-value pairs
-            const metadataSchema = Object.entries(selectedType.metadata_schema || {}).map(([key, type]) => ({
+
+            // Convert metadata schema object to an array
+            const metadataSchema = Object.entries(
+              selectedType.metadata_schema || {}
+            ).map(([key, type]) => ({
               attribute: key,
               type: type,
               value: "",
             }));
-          
-            console.log("Converted Metadata Schema:", metadataSchema);
-          
+
             setSelectedProduct({
               ...selectedProduct,
               product_type: selectedType.id,
@@ -93,31 +109,73 @@ const ProductModal = ({
             setSelectedProduct({ ...selectedProduct, score: e.target.value })
           }
         />
-        <TextField
-          label="Image URL"
-          fullWidth
-          margin="dense"
-          value={selectedProduct.image_url || ""}
-          onChange={(e) =>
-            setSelectedProduct({ ...selectedProduct, image_url: e.target.value })
-          }
-        />
+
+        {/* Image Upload - Drag & Drop or File Selection */}
+        <Box
+          sx={{
+            border: "2px dashed #1976d2",
+            borderRadius: "8px",
+            textAlign: "center",
+            padding: "20px",
+            marginTop: "20px",
+            cursor: "pointer",
+            backgroundColor: "#f9f9f9",
+            "&:hover": { backgroundColor: "#f1f1f1" },
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => document.getElementById("imageUpload").click()}
+        >
+          {selectedProduct.image_base64 ? (
+            <img
+              src={selectedProduct.image_base64}
+              alt="Uploaded"
+              style={{
+                width: "100%",
+                maxHeight: "200px",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              Drag & Drop an image here or click to upload
+            </Typography>
+          )}
+          <input
+            type="file"
+            id="imageUpload"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              if (e.target.files.length > 0) {
+                handleImageUpload(e.target.files[0]);
+              }
+            }}
+          />
+        </Box>
 
         {/* Attributes Section */}
-        {selectedProduct.product_metadata?.map((meta, index) => (
-          <Box key={index} sx={{ display: "flex", gap: 2, mb: 1 }}>
-            <TextField
-              label={meta.attribute}
-              fullWidth
-              margin="dense"
-              type={meta.type === "number" ? "number" : "text"}
-              value={meta.value}
-              onChange={(e) =>
-                handleAttributeChange(index, "value", e.target.value)
-              }
-            />
-          </Box>
-        ))}
+        {selectedProduct.product_metadata?.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>
+              Attributes
+            </Typography>
+            {selectedProduct.product_metadata.map((meta, index) => (
+              <TextField
+                key={index}
+                label={meta.attribute}
+                fullWidth
+                margin="dense"
+                type={meta.type === "number" ? "number" : "text"}
+                value={meta.value}
+                onChange={(e) =>
+                  handleAttributeChange(index, "value", e.target.value)
+                }
+              />
+            ))}
+          </>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

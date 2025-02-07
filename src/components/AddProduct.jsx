@@ -7,6 +7,7 @@ import {
   Button,
   MenuItem,
 } from "@mui/material";
+import { CloudUpload } from "@mui/icons-material"; // Upload icon
 import { fetchProductTypes, addProduct } from "../api/products";
 
 function AddProduct() {
@@ -15,7 +16,7 @@ function AddProduct() {
     name: "",
     brand: "",
     score: "",
-    image_url: "",
+    image_base64: "", // Store Base64 image
     product_type: "",
     product_metadata: [],
   });
@@ -37,7 +38,6 @@ function AddProduct() {
       (type) => type.id === parseInt(event.target.value)
     );
 
-    // Convert metadata schema from object to array
     const metadataSchema = Object.entries(selectedType.metadata_schema || {}).map(
       ([key, type]) => ({
         attribute: key,
@@ -59,6 +59,24 @@ function AddProduct() {
     setSelectedProduct({ ...selectedProduct, product_metadata: updatedMetadata });
   };
 
+  // Handle Image Upload and Convert to Base64
+  const handleImageUpload = (file) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedProduct({ ...selectedProduct, image_base64: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle File Drop
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    handleImageUpload(file);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -75,12 +93,11 @@ function AddProduct() {
       await addProduct(payload);
       alert("Product added successfully!");
 
-      // Reset form
       setSelectedProduct({
         name: "",
         brand: "",
         score: "",
-        image_url: "",
+        image_base64: "",
         product_type: "",
         product_metadata: [],
       });
@@ -166,15 +183,56 @@ function AddProduct() {
             setSelectedProduct({ ...selectedProduct, score: e.target.value })
           }
         />
-        <TextField
-          label="Image URL"
-          fullWidth
-          margin="dense"
-          value={selectedProduct.image_url}
-          onChange={(e) =>
-            setSelectedProduct({ ...selectedProduct, image_url: e.target.value })
-          }
+
+        {/* Image Upload Section */}
+        <Box
+          sx={{
+            width: "100%",
+            height: 150,
+            border: "2px dashed #aaa",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            textAlign: "center",
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "#f5f5f5" },
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => document.getElementById("imageUpload").click()}
+        >
+          <CloudUpload sx={{ fontSize: 40, color: "#1976d2", mb: 1 }} />
+          <Typography variant="body2" color="textSecondary">
+            Drag & drop or click to upload image
+          </Typography>
+        </Box>
+
+        {/* Hidden File Input */}
+        <input
+          id="imageUpload"
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleImageUpload(e.target.files[0])}
+          style={{ display: "none" }}
         />
+
+        {/* Image Preview */}
+        {selectedProduct.image_base64 && (
+          <img
+            src={selectedProduct.image_base64}
+            alt="Product Preview"
+            style={{
+              width: "100%",
+              maxHeight: "200px",
+              objectFit: "contain",
+              marginTop: "10px",
+              borderRadius: "8px",
+              border: "1px solid #ddd",
+            }}
+          />
+        )}
 
         {/* Attributes Section */}
         {selectedProduct.product_metadata?.length > 0 && (

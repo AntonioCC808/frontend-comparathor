@@ -15,33 +15,47 @@ export const fetchProduct = async (productId) => {
   return response.data; // Single product object
 };
 
-// Create a new product
+// Create a new product (Handle Image as Base64)
 export const addProduct = async (product) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/`, product);
+    const payload = {
+      name: product.name,
+      brand: product.brand,
+      score: product.score,
+      image_base64: product.image_base64, // Now sending the image as Base64
+      product_type: product.product_type,
+      product_metadata: product.product_metadata.map((meta) => ({
+        attribute: meta.attribute,
+        value: meta.value,
+        score: meta.score,
+      })),
+    };
+
+    const response = await axios.post(`${API_BASE_URL}/`, payload);
     return response.data; // Return newly created product data
   } catch (error) {
     console.error("API Add Product Error:", error.response?.data || error.message);
     throw error;
   }
 };
-// Update a product by ID
-// Update a product by ID
+
+// Update a product by ID (Handle Image as Base64)
 export const updateProduct = async (productId, product) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/${productId}`, {
+    const payload = {
       name: product.name,
       brand: product.brand,
       score: product.score,
-      image_url: product.image_url,
+      image_base64: product.image_base64, // Now sending updated image as Base64
       product_metadata: product.product_metadata.map((meta) => ({
         id: meta.id || null,
         attribute: meta.attribute,
         value: meta.value,
         score: meta.score,
       })),
-    });
+    };
 
+    const response = await axios.put(`${API_BASE_URL}/${productId}`, payload);
     return response.data;
   } catch (error) {
     console.error("API Update Error:", error.response?.data || error.message);
