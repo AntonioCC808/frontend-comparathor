@@ -1,27 +1,36 @@
 import axios from "axios";
 
-// Read API Base URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + "/comparisons";
 
-// Fetch all comparisons
+// ✅ Fetch all comparisons
 export const fetchComparisons = async () => {
-  const response = await axios.get(`${API_BASE_URL}/`);
-  return response.data;
+  try {
+    const response = await axios.get(`${API_BASE_URL}`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ API Fetch Comparisons Error:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
-// Fetch a single comparison
-export const fetchComparison = async (comparisonId) => {
-  const response = await axios.get(`${API_BASE_URL}/${comparisonId}`);
-  return response.data;
+// ✅ Fetch a specific comparison and its products
+export const fetchComparisonDetails = async (comparisonId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/${comparisonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ API Fetch Comparison Details Error:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
-// Create a new comparison
-export const createComparison = async (comparison) => {
-  const response = await axios.post(`${API_BASE_URL}/`, comparison);
-  return response.data;
-};
-
-// Delete a comparison
+// ✅ Delete a comparison
 export const deleteComparison = async (comparisonId) => {
-  await axios.delete(`${API_BASE_URL}/${comparisonId}`);
+  try {
+    await axios.delete(`${API_BASE_URL}/${comparisonId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ API Delete Comparison Error:", error.response?.data || error.message);
+    throw error;
+  }
 };

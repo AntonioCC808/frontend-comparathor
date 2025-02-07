@@ -2,27 +2,31 @@ import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   IconButton,
-  Box,
   Button,
 } from "@mui/material";
-import { Delete, Add } from "@mui/icons-material";
+import { Delete, Visibility } from "@mui/icons-material";
 import { fetchComparisons, deleteComparison } from "../api/comparisons";
-import ComparisonModal from "./ComparisonModal"; // Assuming you have a modal for adding comparisons
+import ComparisonModal from "./ComparisonModal"; // ✅ Modal Component
 
 function MyComparisons() {
   const [comparisons, setComparisons] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedComparison, setSelectedComparison] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch comparisons on component load
+  // Fetch comparisons on component mount
   useEffect(() => {
     const loadComparisons = async () => {
       try {
-        const comparisonsData = await fetchComparisons();
-        setComparisons(comparisonsData);
+        const data = await fetchComparisons();
+        setComparisons(data);
       } catch (error) {
         console.error("Error fetching comparisons:", error);
       }
@@ -30,63 +34,65 @@ function MyComparisons() {
     loadComparisons();
   }, []);
 
-  // Handle adding a new comparison
-  const handleAddComparison = (newComparison) => {
-    setComparisons([...comparisons, newComparison]);
-    setIsModalOpen(false);
-  };
-
   // Handle deleting a comparison
   const handleDelete = async (comparisonId) => {
     try {
       await deleteComparison(comparisonId);
-      setComparisons(comparisons.filter((comparison) => comparison.id !== comparisonId));
+      setComparisons(comparisons.filter((c) => c.id !== comparisonId));
     } catch (error) {
       console.error("Error deleting comparison:", error);
     }
   };
 
+  // Open comparison modal
+  const handleOpenModal = (comparison) => {
+    setSelectedComparison(comparison);
+    setModalOpen(true);
+  };
+
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Typography variant="h4" gutterBottom align="center">
         My Comparisons
       </Typography>
-      <List>
-        {comparisons.map((comparison) => (
-          <ListItem
-            key={comparison.id}
-            secondaryAction={
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                color="error"
-                onClick={() => handleDelete(comparison.id)}
-              >
-                <Delete />
-              </IconButton>
-            }
-          >
-            <ListItemText primary={comparison.title} />
-          </ListItem>
-        ))}
-      </List>
-      <Box textAlign="center" mt={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add />}
-          size="large"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Add Comparison
-        </Button>
-      </Box>
-      {/* Add ComparisonModal */}
-      <ComparisonModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onComparisonAdded={handleAddComparison}
-      />
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Date Created</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {comparisons.map((comparison) => (
+              <TableRow key={comparison.id}>
+                <TableCell>{comparison.title}</TableCell>
+                <TableCell>{comparison.description}</TableCell>
+                <TableCell>{comparison.date_created}</TableCell>
+                <TableCell>
+                  <IconButton color="primary" onClick={() => handleOpenModal(comparison)}>
+                    <Visibility />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleDelete(comparison.id)}>
+                    <Delete />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Modal for Comparison Details */}
+      {selectedComparison && (
+        <ComparisonModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          comparison={selectedComparison}
+        />
+      )}
     </Container>
   );
 }

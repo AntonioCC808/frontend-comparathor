@@ -1,55 +1,72 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
-  TextField,
-  Button,
   DialogActions,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
 } from "@mui/material";
-import { createComparison } from "../api/comparisons";
+import { fetchComparisonDetails } from "../api/comparisons"; // ✅ Fetch products in a comparison
 
-function ComparisonModal({ open, onClose, onComparisonAdded }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+function ComparisonModal({ open, onClose, comparison }) {
+  const [products, setProducts] = useState([]);
 
-  const handleSubmit = async () => {
-    try {
-      const newComparison = await createComparison({ title, description });
-      onComparisonAdded(newComparison);
-      setTitle("");
-      setDescription("");
-      onClose();
-    } catch (error) {
-      console.error("Error adding comparison:", error);
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchComparisonDetails(comparison.id);
+        setProducts(data.products);
+      } catch (error) {
+        console.error("Error fetching comparison details:", error);
+      }
+    };
+    if (open) {
+      loadProducts();
     }
-  };
+  }, [open, comparison.id]);
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add New Comparison</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>Comparison: {comparison.title}</DialogTitle>
       <DialogContent>
-        <TextField
-          fullWidth
-          label="Comparison Title"
-          margin="normal"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          label="Description"
-          margin="normal"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Attribute</TableCell>
+                {products.map((product) => (
+                  <TableCell key={product.id}>{product.name}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {/* Generate rows dynamically based on attributes */}
+              {products.length > 0 &&
+                Object.keys(products[0].product_metadata).map((attribute) => (
+                  <TableRow key={attribute}>
+                    <TableCell>{attribute}</TableCell>
+                    {products.map((product) => (
+                      <TableCell key={product.id}>
+                        {product.product_metadata[attribute]?.value || "N/A"} 
+                        (Score: {product.product_metadata[attribute]?.score || "N/A"})
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="secondary">
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit} color="primary">
-          Add
+        <Button onClick={onClose} color="primary">
+          Close
         </Button>
       </DialogActions>
     </Dialog>
