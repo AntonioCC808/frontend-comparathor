@@ -32,7 +32,6 @@ function Header({ username }) {
     navigate(route);
     setMenuAnchorEl(null);
   };
-  console.log(username)
 
   return (
     <AppBar position="static" color="primary">

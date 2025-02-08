@@ -10,18 +10,17 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Button,
+  Box,
 } from "@mui/material";
 import { Delete, Visibility } from "@mui/icons-material";
 import { fetchComparisons, deleteComparison } from "../api/comparisons";
-import ComparisonModal from "./ComparisonModal"; // ✅ Modal Component
+import ComparisonModal from "./ComparisonModal"; 
 
 function MyComparisons() {
   const [comparisons, setComparisons] = useState([]);
   const [selectedComparison, setSelectedComparison] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch comparisons on component mount
   useEffect(() => {
     const loadComparisons = async () => {
       try {
@@ -34,7 +33,6 @@ function MyComparisons() {
     loadComparisons();
   }, []);
 
-  // Handle deleting a comparison
   const handleDelete = async (comparisonId) => {
     try {
       await deleteComparison(comparisonId);
@@ -44,7 +42,6 @@ function MyComparisons() {
     }
   };
 
-  // Open comparison modal
   const handleOpenModal = (comparison) => {
     setSelectedComparison(comparison);
     setModalOpen(true);
@@ -53,16 +50,17 @@ function MyComparisons() {
   return (
     <Container maxWidth="md">
       <Typography variant="h4" gutterBottom align="center">
-        My Comparisons
+        MY COMPARISONS
       </Typography>
-      <TableContainer component={Paper}>
+
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
         <Table>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#1976d2" }}>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Date Created</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Title</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Description</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Date Created</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -72,12 +70,14 @@ function MyComparisons() {
                 <TableCell>{comparison.description}</TableCell>
                 <TableCell>{comparison.date_created}</TableCell>
                 <TableCell>
-                  <IconButton color="primary" onClick={() => handleOpenModal(comparison)}>
-                    <Visibility />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(comparison.id)}>
-                    <Delete />
-                  </IconButton>
+                  <Box display="flex" alignItems="center">
+                    <IconButton color="primary" onClick={() => handleOpenModal(comparison)}>
+                      <Visibility />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(comparison.id)}>
+                      <Delete />
+                    </IconButton>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -85,7 +85,6 @@ function MyComparisons() {
         </Table>
       </TableContainer>
 
-      {/* Modal for Comparison Details */}
       {selectedComparison && (
         <ComparisonModal
           open={modalOpen}
