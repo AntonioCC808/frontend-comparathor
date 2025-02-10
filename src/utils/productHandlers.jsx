@@ -87,37 +87,33 @@ export const handleDeleteConfirmed = async (productToDelete, products, setProduc
   setProductToDelete(null);
 };
 
-// Save product (Add or Edit)
-export const handleSaveChanges = async (selectedProduct, products, setProducts, isEditing, handleCloseModals) => {
-  try {
-    if (!selectedProduct.name || !selectedProduct.brand) {
-      console.error("Name and Brand are required.");
-      return;
-    }
 
+export const handleUpdateChanges = async (selectedProduct, setSelectedProduct, setIsModalOpen, setProducts) => {
+  try {
     const productPayload = {
       ...selectedProduct,
-      product_metadata: selectedProduct.product_metadata.map((meta) => ({
-        id: meta.id || null, // Ensure new attributes are handled
+      product_metadata: selectedProduct.product_metadata?.map((meta) => ({
         attribute: meta.attribute,
         value: meta.value,
         score: meta.score,
-      })),
+      })) || [],
     };
 
-    if (isEditing) {
-      const updatedData = await updateProduct(selectedProduct.id, productPayload);
-      setProducts(products.map((p) => (p.id === updatedData.id ? updatedData : p)));
-    } else {
-      const newProduct = await addProduct(productPayload);
-      setProducts([...products, newProduct]);
-    }
+    await updateProduct(productPayload); 
+    const updatedData = await updateProduct(productPayload);  // ✅ API request to update product
 
-    handleCloseModals();
+    // ✅ Update products list in state immediately
+    setProducts((prevProducts) => 
+      prevProducts.map((p) => (p.id === updatedData.id ? updatedData : p))
+    );
+    setIsModalOpen(false);  // ✅ Close modal after updating
+    setSelectedProduct(null);
+
   } catch (error) {
-    console.error("Error saving product:", error);
+    console.error("Error updating product:", error);
   }
 };
+
 
 // Handle attribute change
 export const handleAttributeChange = (index, field, value, setSelectedProduct) => {

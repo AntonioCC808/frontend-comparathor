@@ -26,6 +26,7 @@ function AddComparison() {
   const [selectedProducts, setSelectedProducts] = useState([]); // Selected products for comparison
   const [loading, setLoading] = useState(false); // Loading state
   const [error, setError] = useState(""); // Error state
+  const [successMessage, setSuccessMessage] = useState(""); // Success message state
 
   useEffect(() => {
     const loadProductTypes = async () => {
@@ -70,8 +71,6 @@ function AddComparison() {
   };
 
 
-  const [successMessage, setSuccessMessage] = useState(""); // Success message state
-
   const handleSubmit = async (event) => {
     event.preventDefault();
   
@@ -80,24 +79,31 @@ function AddComparison() {
       return;
     }
   
+    const today = new Date().toISOString().split("T")[0]; // ✅ Extracts only YYYY-MM-DD
+  
     const comparisonData = {
       title: comparisonName,
       description,
-      id_user: 1, // Ensure this is the correct user ID
-      product_type: productType, // This will be fixed in `addComparison`
-      date_created: new Date().toISOString(),
-      products: selectedProducts.map((id) => id), // Ensure only IDs are sent
+      id_user: localStorage.getItem("user_id"),
+      product_type: productType,
+      date_created: today, // ✅ Now only stores YYYY-MM-DD
+      products: selectedProducts.map((id) => id),
     };
   
     try {
       console.log("📤 Sending comparison data:", comparisonData);
       await addComparison(comparisonData);
-      setSuccessMessage("✅ Comparison added successfully!"); // Show success message instead of alert
+      setSuccessMessage("✅ Comparison added successfully!");
+    
+      // Auto-hide the success message after 3 seconds
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("❌ Error submitting comparison:", error);
       setError("Failed to add comparison. Please try again.");
     }
+    
   };
+  
   
 
   return (

@@ -46,7 +46,7 @@ function SignUp() {
     try {
       await register(userId, email, password, role);
       setSuccessMessage("✅ Registration successful! Redirecting to login...");
-      setTimeout(() => navigate("/"), 3000);
+      setTimeout(() => navigate("/"), 1000);
     } catch (error) {
       console.error("❌ Registration Error:", error.response?.data);
   

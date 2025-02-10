@@ -30,8 +30,8 @@ import {
   handleCloseModals,
   handleDeleteConfirmation,
   handleDeleteConfirmed,
-  handleSaveChanges,
   handleAttributeChange,
+  handleUpdateChanges
 } from "../utils/productHandlers";
 import ProductModal from "./ProductModal";
 
@@ -90,7 +90,7 @@ function MyProducts() {
                 <TableRow key={product.id}>
                   <TableCell>
                     <img
-                      src={product.image_url || "https://picsum.photos/50"}
+                      src={product.image_base64}
                       alt={product.name}
                       style={{
                         width: "50px",
@@ -149,7 +149,7 @@ function MyProducts() {
                 }}
               >
                 <img
-                  src={product.image_url || "https://picsum.photos/150"}
+                  src={product.image_base64}
                   alt={product.name}
                   style={{
                     width: "120px",
@@ -201,7 +201,7 @@ function MyProducts() {
           {selectedProduct && (
             <>
               <img
-                src={selectedProduct.image_url || "https://picsum.photos/150"}
+                src={selectedProduct.image_base64}
                 alt={selectedProduct.name}
                 style={{
                   width: "100%",
@@ -264,7 +264,7 @@ function MyProducts() {
       </Dialog>
 
       {/* Product Modals */}
-      <ProductModal open={isModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} productTypes={productTypes} handleAttributeChange={handleAttributeChange} handleSaveChanges={handleSaveChanges} />
+      <ProductModal open={isModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} handleAttributeChange={handleAttributeChange} handleUpdateChanges={handleUpdateChanges} setIsModalOpen={setIsModalOpen} setProducts={setProducts} />
     </Container>
   );
 }

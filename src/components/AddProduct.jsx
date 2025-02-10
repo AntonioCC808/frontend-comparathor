@@ -6,12 +6,15 @@ import {
   TextField,
   Button,
   MenuItem,
+  Alert
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material"; // Upload icon
 import { fetchProductTypes, addProduct } from "../api/products";
 
 function AddProduct() {
   const [productTypes, setProductTypes] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(""); // ✅ Success message state
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ 
   const [selectedProduct, setSelectedProduct] = useState({
     name: "",
     brand: "",
@@ -77,35 +80,47 @@ function AddProduct() {
     handleImageUpload(file);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  
+const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    if (!selectedProduct.name || !selectedProduct.product_type) {
-      alert("Please fill out all required fields.");
-      return;
-    }
+  if (!selectedProduct.name || !selectedProduct.product_type) {
+    setErrorMessage("⚠️ Please fill out all required fields.");
+    return;
+  }
 
-    try {
-      const payload = {
-        ...selectedProduct,
-        id_user: 1, // Replace with actual user ID
-      };
-      await addProduct(payload);
-      alert("Product added successfully!");
+  try {
+    const payload = {
+      ...selectedProduct,
+      user_id: localStorage.getItem("user_id"), // Replace with actual user ID
+      product_metadata: selectedProduct.product_metadata.map((meta) => ({
+        attribute: meta.attribute,
+        value: meta.value,
+        score: parseFloat(selectedProduct.score) || 0, // ✅ Convert to number
+      })),
+    };
 
-      setSelectedProduct({
-        name: "",
-        brand: "",
-        score: "",
-        image_base64: "",
-        product_type: "",
-        product_metadata: [],
-      });
-    } catch (error) {
-      console.error("Error adding product:", error);
-      alert("Failed to add product.");
-    }
-  };
+    console.log("📤 Sending Payload:", payload);
+    await addProduct(payload);
+    setSuccessMessage("✅ Product added successfully!");
+    setErrorMessage(""); // ✅ Clear error message if successful
+
+    // Reset form
+    setSelectedProduct({
+      name: "",
+      brand: "",
+      score: "",
+      image_base64: "",
+      product_type: "",
+      product_metadata: [],
+    });
+
+  } catch (error) {
+    console.error("❌ Error adding product:", error);
+    setErrorMessage("❌ Failed to add product. Please try again.");
+    setSuccessMessage(""); // ✅ Clear success message if an error occurs
+  }
+};
 
   return (
     <Container maxWidth="sm">
@@ -117,6 +132,18 @@ function AddProduct() {
       >
         Add New Product
       </Typography>
+
+      {/* Success & Error Messages */}
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {successMessage}
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
 
       <Box
         component="form"

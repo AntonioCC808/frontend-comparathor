@@ -6,7 +6,6 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
   Box,
   Typography,
 } from "@mui/material";
@@ -16,9 +15,10 @@ const ProductModal = ({
   onClose,
   selectedProduct,
   setSelectedProduct,
-  productTypes,
   handleAttributeChange,
-  handleSaveChanges,
+  handleUpdateChanges,
+  setIsModalOpen,
+  setProducts
 }) => {
   if (!selectedProduct) return null; // Prevents rendering empty modal
 
@@ -40,45 +40,10 @@ const ProductModal = ({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Add Product</DialogTitle>
+      <DialogTitle>Update Product</DialogTitle>
       <DialogContent>
         {/* Product Type Selector */}
-        <TextField
-          select
-          label="Product Type"
-          fullWidth
-          margin="dense"
-          value={selectedProduct.product_type || ""}
-          onChange={(e) => {
-            const selectedType = productTypes.find(
-              (type) => type.id === parseInt(e.target.value)
-            );
-
-            // Convert metadata schema object to an array
-            const metadataSchema = Object.entries(
-              selectedType.metadata_schema || {}
-            ).map(([key, type]) => ({
-              attribute: key,
-              type: type,
-              value: "",
-            }));
-
-            setSelectedProduct({
-              ...selectedProduct,
-              product_type: selectedType.id,
-              product_metadata: metadataSchema,
-            });
-          }}
-        >
-          <MenuItem value="" disabled>
-            Select a product type
-          </MenuItem>
-          {productTypes.map((type) => (
-            <MenuItem key={type.id} value={type.id}>
-              {type.name}
-            </MenuItem>
-          ))}
-        </TextField>
+  
 
         {/* Product Details */}
         <TextField
@@ -181,9 +146,9 @@ const ProductModal = ({
         <Button onClick={onClose} color="secondary">
           Cancel
         </Button>
-        <Button onClick={handleSaveChanges} color="primary">
-          Save Product
-        </Button>
+        <Button onClick={() => handleUpdateChanges(selectedProduct, setSelectedProduct, setIsModalOpen, setProducts)} color="primary">
+        Update product
+      </Button>
       </DialogActions>
     </Dialog>
   );
