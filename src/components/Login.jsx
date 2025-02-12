@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-function Login({ setIsAuthenticated }) {
+function Login({ handleAuthChange }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +35,7 @@ function Login({ setIsAuthenticated }) {
       localStorage.setItem("user", JSON.stringify({ user_id, email, role }));
   
       setAuthToken(access_token);
-      setIsAuthenticated(true, { user_id, email, role });
+      handleAuthChange(true, { user_id, email, role });
   
       console.log("🚀 Login successful! Redirecting to '/home'", { user_id, email, role });
       navigate("/home");
@@ -121,7 +121,7 @@ function Login({ setIsAuthenticated }) {
 }
 
 Login.propTypes = {
-  setIsAuthenticated: PropTypes.func.isRequired,
+  handleAuthChange: PropTypes.func.isRequired,
 };
 
 export default Login;

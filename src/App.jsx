@@ -44,7 +44,9 @@ function App() {
 
   return (
     <Router>
-      <AppContent user={user} handleAuthChange={handleAuthChange} />
+      <Routes>
+        <Route path="/*" element={<AppContent user={user} handleAuthChange={handleAuthChange} />} />
+      </Routes>
     </Router>
   );
 }
@@ -56,9 +58,8 @@ function AppContent({ user, handleAuthChange }) {
   return (
     <>
       {!isAuthPage && user && <Header username={user.user_id} onLogout={() => handleAuthChange(false)} />}
-
       <Routes>
-        <Route path="/" element={<Login setIsAuthenticated={handleAuthChange} />} />
+        <Route path="/" element={<Login handleAuthChange={handleAuthChange} />} />
         <Route path="/signup" element={<SignUp />} />
         <Route
           path="/home"
