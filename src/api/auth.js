@@ -34,24 +34,46 @@ export const register = async (user_id, email, password, role = "user") => {
 
 // Set Auth Token in Axios Headers
 export const setAuthToken = (token) => {
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  if (token) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common["Authorization"];
+  }
 };
-
 
 // Get Current User API
 export const getCurrentUser = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/me`);
-    return response.data; // Returns user details { user_id, email, role }
+    const token = localStorage.getItem("access_token");
+    
+    if (!token) {
+      throw new Error("No access token found");
+    }
+
+    const response = await axios.get(`${API_BASE_URL}/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return response.data;
   } catch (error) {
     console.error("❌ API Get Current User Error:", error.response?.data || error.message);
-    throw error; // Handle expired token or unauthorized access
+
+    if (error.response?.status === 401) {
+      logout(); // ✅ Automatically log out if token is invalid
+    }
+
+    throw error;
   }
 };
 
+
 // Logout Function (Clears LocalStorage & Auth Headers)
 export const logout = () => {
+  console.log("🔴 Logging out auth...");
+  
   localStorage.removeItem("access_token");
   localStorage.removeItem("user");
+
+  // ✅ Remove Authorization header from future requests
   delete axios.defaults.headers.common["Authorization"];
 };

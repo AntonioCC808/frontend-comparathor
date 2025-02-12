@@ -33,7 +33,7 @@ import {
   handleAttributeChange,
   handleUpdateChanges
 } from "../utils/productHandlers";
-import ProductModal from "./modals/ProductModal";
+import UpdateProductModal from "./modals/UpdateProductModal";
 
 function MyProducts() {
   const [products, setProducts] = useState([]);
@@ -264,7 +264,7 @@ function MyProducts() {
       </Dialog>
 
       {/* Product Modals */}
-      <ProductModal open={isModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} handleAttributeChange={handleAttributeChange} handleUpdateChanges={handleUpdateChanges} setIsModalOpen={setIsModalOpen} setProducts={setProducts} />
+      <UpdateProductModal open={isModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} handleAttributeChange={handleAttributeChange} handleUpdateChanges={handleUpdateChanges} setIsModalOpen={setIsModalOpen} setProducts={setProducts} />
     </Container>
   );
 }

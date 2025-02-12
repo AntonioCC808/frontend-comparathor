@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import routes from "./routes/routes";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
@@ -14,23 +14,29 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-          localStorage.setItem("user", JSON.stringify(currentUser));
-        } else {
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+          console.warn("🔴 No access token found. Logging out...");
           logout();
+          setUser(null);
+        } else {
+          const currentUser = await getCurrentUser();
+
+          if (currentUser && JSON.stringify(currentUser) !== JSON.stringify(user)) {
+            setUser(currentUser);
+            localStorage.setItem("user", JSON.stringify(currentUser));
+          }
         }
       } catch (error) {
         console.error("Error fetching user:", error);
         logout();
+        setUser(null);
       }
     };
 
-    if (!user) {
-      fetchUser();
-    }
-  }, []);
+    fetchUser();
+  }, [user]); // Run when the component mounts and when the user state changes
 
   const handleAuthChange = (authState, userData = null) => {
     if (authState) {
@@ -38,6 +44,8 @@ function App() {
       localStorage.setItem("user", JSON.stringify(userData));
     } else {
       setUser(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("access_token");
       logout();
     }
   };
@@ -53,13 +61,14 @@ function App() {
 
 function AppContent({ user, handleAuthChange }) {
   const location = useLocation();
-  const isAuthPage = location.pathname === "/" || location.pathname === "/signup";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
 
   return (
     <>
-      {!isAuthPage && user && <Header username={user.user_id} onLogout={() => handleAuthChange(false)} />}
+      {!isAuthPage && user && <Header username={user.user_id} setUser={handleAuthChange} />}
       <Routes>
-        <Route path="/" element={<Login handleAuthChange={handleAuthChange} />} />
+      <Route path="/" element={user ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login handleAuthChange={handleAuthChange} />} />
         <Route path="/signup" element={<SignUp />} />
         <Route
           path="/home"

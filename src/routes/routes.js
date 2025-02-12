@@ -14,7 +14,7 @@ const routes = [
   { path: '/comparisons', component: MyComparisons, protected: true },
   { path: '/addProduct', component: AddProduct, protected: true },
   { path: '/addComparison', component: AddComparison, protected: true },
-  { path: "/", component: Login, protected: false },
+  { path: "/login", component: Login, protected: false },
   { path: "/signup", component: SignUp, protected: false },
 ];
 

@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 
-const ProductModal = ({
+const UpdateProductModal = ({
   open,
   onClose,
   selectedProduct,
@@ -154,4 +154,4 @@ const ProductModal = ({
   );
 };
 
-export default ProductModal;
+export default UpdateProductModal;
