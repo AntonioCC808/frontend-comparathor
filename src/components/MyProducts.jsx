@@ -33,7 +33,7 @@ import {
   handleAttributeChange,
   handleUpdateChanges
 } from "../utils/productHandlers";
-import ProductModal from "./ProductModal";
+import ProductModal from "./modals/ProductModal";
 
 function MyProducts() {
   const [products, setProducts] = useState([]);

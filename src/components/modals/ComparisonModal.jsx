@@ -14,7 +14,7 @@ import {
   Button,
   Typography,
 } from "@mui/material";
-import { fetchComparisonDetails } from "../api/comparisons";
+import { fetchComparisonDetails } from "../../api/comparisons";
 
 function ComparisonModal({ open, onClose, comparison }) {
   const [products, setProducts] = useState([]);

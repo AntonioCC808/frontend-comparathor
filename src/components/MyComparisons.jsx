@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { Delete, Visibility } from "@mui/icons-material";
 import { fetchComparisons, deleteComparison } from "../api/comparisons";
-import ComparisonModal from "./ComparisonModal"; 
+import ComparisonModal from "./modals/ComparisonModal"; 
 
 function MyComparisons() {
   const [comparisons, setComparisons] = useState([]);

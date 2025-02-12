@@ -13,6 +13,7 @@ import {
   InputLabel,
   Checkbox,
   ListItemText,
+  OutlinedInput
 } from "@mui/material";
 import { fetchProductTypes, fetchProducts } from "../api/products";
 import { addComparison } from "../api/comparisons";
@@ -54,7 +55,7 @@ function AddComparison() {
       setLoading(true);
       const allProducts = await fetchProducts();
       const filteredProducts = allProducts.filter(
-        (product) => product.id_product_type === selectedTypeId
+        (product) => product.product_type_id === selectedTypeId
       );
       setProducts(filteredProducts);
     } catch (error) {
@@ -142,24 +143,24 @@ function AddComparison() {
         }}
       >
         {/* Product Type Selector */}
-        <TextField
-          select
-          label="Product Type"
-          fullWidth
-          margin="dense"
+        <FormControl fullWidth margin="dense" variant="outlined">
+        <InputLabel id="product-type-label">Product Type</InputLabel>
+        <Select
+          labelId="product-type-label"
           value={productType}
           onChange={handleTypeChange}
-          disabled={loading}
+          displayEmpty
+          input={<OutlinedInput label="Product Type" />} // ✅ Ensures proper label cutout
         >
           <MenuItem value="" disabled>
-            Select a product type
           </MenuItem>
           {productTypes.map((type) => (
             <MenuItem key={type.id} value={type.id}>
               {type.name}
             </MenuItem>
           ))}
-        </TextField>
+        </Select>
+      </FormControl>
 
         {/* Comparison Name */}
         <TextField
@@ -190,27 +191,32 @@ function AddComparison() {
 
         {/* Product Selection */}
         {!loading && productType && products.length > 0 && (
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="product-selection-label">Select Products</InputLabel>
-            <Select
-              labelId="product-selection-label"
-              multiple
-              value={selectedProducts}
-              onChange={handleProductSelection}
-              renderValue={(selected) =>
-                selected
-                  .map((id) => products.find((p) => p.id === id)?.name)
-                  .join(", ")
-              }
-            >
-              {products.map((product) => (
-                <MenuItem key={product.id} value={product.id}>
-                  <Checkbox checked={selectedProducts.includes(product.id)} />
-                  <ListItemText primary={product.name} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <FormControl fullWidth margin="dense" variant="outlined">
+  <InputLabel id="product-selection-label">Select Products</InputLabel>
+  <Select
+    labelId="product-selection-label"
+    multiple
+    value={selectedProducts}
+    onChange={handleProductSelection}
+    displayEmpty
+    renderValue={(selected) =>
+      selected.length > 0
+        ? selected
+            .map((id) => products.find((p) => p.id === id)?.name)
+            .join(", ")
+        : ""
+    }
+    input={<OutlinedInput label="Select Products" />} // ✅ This ensures a proper label cutout
+  >
+    {products.map((product) => (
+      <MenuItem key={product.id} value={product.id}>
+        <Checkbox checked={selectedProducts.includes(product.id)} />
+        <ListItemText primary={product.name} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+ 
         )}
 
         {/* No Products Available Message */}
