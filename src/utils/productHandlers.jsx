@@ -11,49 +11,118 @@ export const loadProducts = async (setProducts) => {
 };
 
 // Handle editing product
-export const handleEditProduct = (product, setSelectedProduct, setIsEditing, setIsModalOpen) => {
+export const handleEditProduct = (product, setSelectedProduct, setIsEditing, setIsEditModalOpen) => {
   setSelectedProduct({ ...product });
-  setIsEditing(true);
-  setIsModalOpen(true);
+  setIsEditing(true); // ✅ Ensure editing mode is enabled
+  setIsEditModalOpen(true); // ✅ Opens ONLY the Edit Product modal
 };
+
 
 // Handle adding a new product
 export const handleAddProduct = async (setSelectedProduct, setIsEditing, setIsModalOpen, setProductTypes) => {
-    setIsEditing(false); // Set to adding mode
-    setIsModalOpen(true); // Open modal first to avoid blocking UI updates
-  
-    try {
-      const types = await fetchProductTypes(); // Fetch product types from API
-  
-      if (!Array.isArray(types) || types.length === 0) {
-        console.error("No product types available.");
-        return;
-      }
-  
-      setProductTypes(types); // Store product types in state
-  
-      const defaultType = types[0]; // Default to first product type
-      const metadataSchema = Array.isArray(defaultType.metadata_schema) ? defaultType.metadata_schema : [];
-  
-      setSelectedProduct({
-        name: "",
-        brand: "",
-        score: "",
-        image_url: "",
-        product_type:  "Select...",
-        product_metadata: metadataSchema.map(attr => ({
-          attribute: attr.name,
-          type: attr.type,
-          value: "",
-        })),
-      });
-  
-    } catch (error) {
-      console.error("Error fetching product types:", error);
+  setIsEditing(false); // ✅ Ensure we're in "Add Product" mode
+  setSelectedProduct({  // ✅ Reset product state BEFORE opening modal
+    name: "",
+    brand: "",
+    score: "",
+    image_base64: "",
+    product_type: "",
+    product_metadata: [],
+  });
+
+  try {
+    const types = await fetchProductTypes();
+    if (!Array.isArray(types) || types.length === 0) {
+      console.error("No product types available.");
+      return;
     }
-  };
-  
-  
+    setProductTypes(types);
+
+    const metadataSchema = Array.isArray(types[0]?.metadata_schema)
+      ? types[0].metadata_schema
+      : [];
+
+    setSelectedProduct(prevProduct => ({
+      ...prevProduct,
+      product_metadata: metadataSchema.map(attr => ({
+        attribute: attr.name,
+        type: attr.type,
+        value: "",
+      })),
+    }));
+
+    setIsModalOpen(true); // ✅ Open modal AFTER resetting state
+
+  } catch (error) {
+    console.error("Error fetching product types:", error);
+  }
+};
+
+
+
+
+// Handle form submission
+export const handleSubmit = async (event, selectedProduct, setSelectedProduct, setErrorMessage, setSuccessMessage) => {
+  event.preventDefault();
+
+  if (!selectedProduct.name || !selectedProduct.product_type) {
+    setErrorMessage("⚠️ Please fill out all required fields.");
+    return;
+  }
+
+   // Get the full user object from localStorage
+   const user = JSON.parse(localStorage.getItem("user"));
+
+
+  try {
+    const payload = {
+      ...selectedProduct,
+      user_id: user.user_id,
+      product_metadata: selectedProduct.product_metadata.map(meta => ({
+        attribute: meta.attribute,
+        value: meta.value,
+        score: parseFloat(selectedProduct.score) || 0,
+      })),
+    };
+
+    console.log("📤 Sending Payload:", payload);
+    await addProduct(payload);
+    setSuccessMessage("✅ Product added successfully!");
+    setErrorMessage("");
+
+    setSelectedProduct({
+      name: "",
+      brand: "",
+      score: "",
+      image_base64: "",
+      product_type: "",
+      product_metadata: [],
+    });
+  } catch (error) {
+    console.error("❌ Error adding product:", error);
+    setErrorMessage("❌ Failed to add product. Please try again.");
+    setSuccessMessage("");
+  }
+};
+
+// Handle Image Upload and Convert to Base64
+export const handleImageUpload = (file, setSelectedProduct) => {
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedProduct(prevProduct => ({ ...prevProduct, image_base64: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// Handle File Drop
+export const handleDrop = (event, setSelectedProduct) => {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  handleImageUpload(file, setSelectedProduct);
+};
+
 
 // Handle viewing product details
 export const handleViewProduct = (product, setSelectedProduct, setIsInfoModalOpen) => {
@@ -61,12 +130,12 @@ export const handleViewProduct = (product, setSelectedProduct, setIsInfoModalOpe
   setIsInfoModalOpen(true);
 };
 
-// Close all modals
+// Handle modal close
 export const handleCloseModals = (setSelectedProduct, setIsModalOpen) => {
-    setSelectedProduct(null);
-    setIsModalOpen(false);
-  };
-  
+  setSelectedProduct(null);
+  setIsModalOpen(false);
+};
+
 
 // Confirm delete
 export const handleDeleteConfirmation = (product, setProductToDelete, setIsConfirmOpen) => {
@@ -115,9 +184,9 @@ export const handleUpdateChanges = async (selectedProduct, setSelectedProduct, s
 };
 
 
-// Handle attribute change
+// Handle attribute changes
 export const handleAttributeChange = (index, field, value, setSelectedProduct) => {
-  setSelectedProduct((prevProduct) => {
+  setSelectedProduct(prevProduct => {
     const updatedAttributes = [...prevProduct.product_metadata];
     updatedAttributes[index] = { ...updatedAttributes[index], [field]: value };
     return { ...prevProduct, product_metadata: updatedAttributes };
@@ -141,17 +210,26 @@ export const handleRemoveAttribute = (index, setSelectedProduct) => {
 };
 
 
-export const handleProductTypeChange = (event, productTypes, setSelectedProduct, setSelectedProductType) => {
-    const selectedType = productTypes.find(pt => pt.id === parseInt(event.target.value, 10));
-    setSelectedProductType(selectedType);
-  
-    setSelectedProduct((prevProduct) => ({
-      ...prevProduct,
-      product_type: selectedType.name,
-      product_metadata: selectedType.metadata_schema.map(attr => ({
-        attribute: attr.name,
-        value: "", // User will input this
-        type: attr.type, // Helps with validation
-      })),
-    }));
-  };
+// Handle product type selection
+export const handleTypeChange = (event, productTypes, setSelectedProduct, selectedProduct) => {
+  const selectedType = productTypes.find(
+    (type) => type.id === parseInt(event.target.value, 10)
+  );
+
+  if (!selectedType) return;
+
+  const metadataSchema = Object.entries(selectedType.metadata_schema || {}).map(
+    ([key, type]) => ({
+      attribute: key,
+      type: type,
+      value: "",
+    })
+  );
+
+  setSelectedProduct({
+    ...selectedProduct,
+    product_type: selectedType.id,
+    product_metadata: metadataSchema,
+  });
+};
+

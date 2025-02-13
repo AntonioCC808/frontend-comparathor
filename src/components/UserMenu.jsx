@@ -50,9 +50,6 @@ const UserMenu = ({ username, setUser }) => { // ✅ Accept setUser prop
         <MenuItem onClick={handleProfileClick}>Profile Settings</MenuItem>
         <MenuItem onClick={handleLogout}>Logout</MenuItem> {/* ✅ Calls handleLogout */}
       </Menu>
-      <Typography variant="body1" component="div" sx={{ marginLeft: 1 }}>
-        {username || "Guest"}
-      </Typography>
     </>
   );
 };

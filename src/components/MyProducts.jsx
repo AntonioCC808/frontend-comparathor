@@ -30,16 +30,17 @@ import {
   handleCloseModals,
   handleDeleteConfirmation,
   handleDeleteConfirmed,
-  handleAttributeChange,
-  handleUpdateChanges
 } from "../utils/productHandlers";
 import UpdateProductModal from "./modals/UpdateProductModal";
+import NewProductModal from "./modals/NewProductModal";
+import InfoProductModal from "./modals/InfoProductModal";
 
 function MyProducts() {
   const [products, setProducts] = useState([]);
-  const [productTypes, setProductTypes] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productTypes, setProductTypes] = useState([]);  // ✅ Added this missing state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);  // Add Product Modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Update Product Modal
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
@@ -113,7 +114,7 @@ function MyProducts() {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Edit">
-                      <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsModalOpen)}>
+                      <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsEditModalOpen)}>
                         <Edit />
                       </IconButton>
                     </Tooltip>
@@ -171,7 +172,7 @@ function MyProducts() {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Edit">
-                    <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsModalOpen)}>
+                    <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsEditModalOpen)}>
                       <Edit />
                     </IconButton>
                   </Tooltip>
@@ -187,69 +188,43 @@ function MyProducts() {
         </Grid>
       )}
 
+
       {/* Add Product Button */}
       <Box textAlign="center" mt={4}>
-        <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => handleAddProduct(setSelectedProduct, setIsEditing, setIsModalOpen, setProductTypes)}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<Add />}
+          onClick={() => handleAddProduct(setSelectedProduct, setIsEditing, setIsAddModalOpen, setProductTypes)}
+        >
           Add Product
         </Button>
       </Box>
 
-      {/* Info Modal */}
-      <Dialog open={isInfoModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)}>
-        <DialogTitle sx={{ fontWeight: "bold" }}>Product Details</DialogTitle>
-        <DialogContent>
-          {selectedProduct && (
-            <>
-              <img
-                src={selectedProduct.image_base64}
-                alt={selectedProduct.name}
-                style={{
-                  width: "100%",
-                  maxHeight: "250px",
-                  objectFit: "cover",
-                  marginBottom: "15px",
-                  borderRadius: "12px",
-                  border: "3px solid #ddd",
-                }}
-              />
-              <Typography variant="h5" sx={{ fontWeight: "bold" }}>{selectedProduct.name}</Typography>
-              <Typography variant="subtitle1" sx={{ color: "#555" }}>Brand: {selectedProduct.brand}</Typography>
-              <Typography variant="subtitle1" sx={{ color: "#555" }}>Score: {selectedProduct.score}</Typography>
+      {/* Add Product Modal */}
+      <NewProductModal
+        open={isAddModalOpen} // ✅ Only opens when adding a new product
+        onClose={() => setIsAddModalOpen(false)}
+        setProducts={setProducts}
+        productTypes={productTypes} // ✅ Pass product types here
+        setProductTypes={setProductTypes} // ✅ Pass the function as well
+      />
 
-              {selectedProduct.product_metadata.length > 0 ? (
-                <>
-                  <Typography variant="h6" sx={{ mt: 3, fontWeight: "bold" }}>Attributes</Typography>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell><b>Attribute</b></TableCell>
-                        <TableCell><b>Value</b></TableCell>
-                        <TableCell><b>Score</b></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {selectedProduct.product_metadata.map((meta, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{meta.attribute}</TableCell>
-                          <TableCell>{meta.value}</TableCell>
-                          <TableCell>{meta.score}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </>
-              ) : (
-                <Typography variant="body2" sx={{ mt: 2 }}>No metadata available</Typography>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)} color="secondary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Update Product Modal */}
+      <UpdateProductModal
+        open={isEditModalOpen} // ✅ Only opens when editing an existing product
+        onClose={() => setIsEditModalOpen(false)}
+        product={selectedProduct}
+        setProducts={setProducts}
+        isEditing={isEditing}
+      />
+
+      {/* Info Modal */}
+      <InfoProductModal
+        open={isInfoModalOpen}
+        onClose={() => handleCloseModals(setSelectedProduct, setIsInfoModalOpen)}
+        product={selectedProduct}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isConfirmOpen} onClose={() => setIsConfirmOpen(false)}>
@@ -262,9 +237,6 @@ function MyProducts() {
           <Button onClick={handleDeleteConfirmed} color="error">Delete</Button>
         </DialogActions>
       </Dialog>
-
-      {/* Product Modals */}
-      <UpdateProductModal open={isModalOpen} onClose={() => handleCloseModals(setSelectedProduct, setIsModalOpen)} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} handleAttributeChange={handleAttributeChange} handleUpdateChanges={handleUpdateChanges} setIsModalOpen={setIsModalOpen} setProducts={setProducts} />
     </Container>
   );
 }

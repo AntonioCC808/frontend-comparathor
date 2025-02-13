@@ -51,12 +51,15 @@ export const handleSubmitComparison = async (
     return;
   }
 
+  // Get the full user object from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+
   try {
     const payload = {
       title: comparisonName,
       description,
       product_type: productType,
-      id_user: 1, // Change this to the actual user ID
+      id_user: user.user_id,
       date_created: new Date().toISOString(),
       products: selectedProducts.map((id) => ({ product_id: id })),
     };
