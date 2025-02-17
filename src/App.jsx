@@ -6,7 +6,9 @@ import Header from "./components/Header";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 import Home from "./components/Home";
+import PublicProducts from "./components/PublicPage"; // ✅ Import the new public page
 import { getCurrentUser, logout } from "./api/auth";
+import PublicPage from "./components/PublicPage";
 
 function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || null);
@@ -14,16 +16,18 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-
+        let token = localStorage.getItem("access_token");
+  
         if (!token) {
-          console.warn("🔴 No access token found. Logging out...");
+          console.warn("No access token found. Logging out...");
           logout();
           setUser(null);
-        } else {
-          const currentUser = await getCurrentUser();
-
-          if (currentUser && JSON.stringify(currentUser) !== JSON.stringify(user)) {
+          return;
+        }
+  
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          if (JSON.stringify(currentUser) !== JSON.stringify(user)) {
             setUser(currentUser);
             localStorage.setItem("user", JSON.stringify(currentUser));
           }
@@ -34,14 +38,20 @@ function App() {
         setUser(null);
       }
     };
-
+  
     fetchUser();
-  }, [user]); // Run when the component mounts and when the user state changes
+  }, []); // ✅ Remove dependency on `user` to avoid unnecessary calls
+  
 
-  const handleAuthChange = (authState, userData = null) => {
+  const handleAuthChange = (authState, userData = null, token = null) => {
     if (authState) {
+      if (!token) {
+        console.error("No token provided during login.");
+        return;
+      }
+      localStorage.setItem("access_token", token); // ✅ Store token
+      localStorage.setItem("user", JSON.stringify(userData)); // ✅ Store user
       setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
     } else {
       setUser(null);
       localStorage.removeItem("user");
@@ -65,11 +75,16 @@ function AppContent({ user, handleAuthChange }) {
 
   return (
     <>
-      {!isAuthPage && user && <Header username={user.user_id} setUser={handleAuthChange} />}
+      {!isAuthPage && user && <Header user={user} setUser={handleAuthChange} />}
       <Routes>
-      <Route path="/" element={user ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login handleAuthChange={handleAuthChange} />} />
+        {/* Default route: PublicPage for guests, Home for logged-in users */}
+        <Route path="/" element={user ? <Navigate to="/home" replace /> : <PublicPage />} />
+
+        {/* Authentication Pages */}
+        <Route path="/login" element={<Login handleAuthChange={handleAuthChange} />} />
         <Route path="/signup" element={<SignUp />} />
+
+        {/* Explicitly define /home to ensure it's always accessible */}
         <Route
           path="/home"
           element={
@@ -78,16 +93,22 @@ function AppContent({ user, handleAuthChange }) {
             </ProtectedRoute>
           }
         />
+
+        {/* Dynamically handle all other routes */}
         {routes
-          .filter(({ path }) => path !== "/home")
-          .map(({ path, component: Component }) => (
+          .filter(({ path }) => path !== "/home") // Avoid duplicate definition
+          .map(({ path, component: Component, protected: isProtected, adminOnly }) => (
             <Route
               key={path}
               path={path}
               element={
-                <ProtectedRoute isAuthenticated={Boolean(user)}>
+                isProtected ? (
+                  <ProtectedRoute isAuthenticated={Boolean(user)} user={user} adminOnly={adminOnly}>
+                    <Component />
+                  </ProtectedRoute>
+                ) : (
                   <Component />
-                </ProtectedRoute>
+                )
               }
             />
           ))}

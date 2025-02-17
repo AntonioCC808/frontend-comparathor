@@ -48,7 +48,7 @@ function SignUp() {
       setSuccessMessage("✅ Registration successful! Redirecting to home...");
       setTimeout(() => navigate("/home"), 1000);
     } catch (error) {
-      console.error("❌ Registration Error:", error.response?.data);
+      console.error("Registration Error:", error.response?.data);
   
       let fieldErrors = {};
   
@@ -119,19 +119,6 @@ function SignUp() {
           error={Boolean(errors.email)}
           helperText={errors.email}
         />
-
-        <TextField
-          select
-          label="Role"
-          fullWidth
-          margin="normal"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
-          <MenuItem value="user">User</MenuItem>
-          <MenuItem value="admin">Admin</MenuItem>
-        </TextField>
-
         <TextField
           label="Password"
           type={showPassword ? "text" : "password"}

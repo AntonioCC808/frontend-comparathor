@@ -14,9 +14,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import appLogo from "../assets/app-logo.svg";
 import UserMenu from "./UserMenu";
 
-function Header({ username, setUser }) {
+function Header({ user, setUser  }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
 
   const handleMenuOpen = (event) => {
@@ -45,17 +44,23 @@ function Header({ username, setUser }) {
         >
           {/* Menú de Navegación */}
           <Box display="flex" alignItems="center">
-            <IconButton color="inherit" aria-label="menu" onClick={handleMenuOpen}>
-              <MenuIcon />
-            </IconButton>
-            <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleMenuClose}>
-              <MenuItem onClick={() => handleMenuClick("/home")}>Home</MenuItem>
-              <MenuItem onClick={() => handleMenuClick("/products")}>My Products</MenuItem>
-              <MenuItem onClick={() => handleMenuClick("/comparisons")}>My Comparisons</MenuItem>
-              <MenuItem onClick={() => handleMenuClick("/addProduct")}>Add New Product</MenuItem>
-              <MenuItem onClick={() => handleMenuClick("/addComparison")}>Add New Comparison</MenuItem>
-            </Menu>
-          </Box>
+          <IconButton color="inherit" aria-label="menu" onClick={handleMenuOpen}>
+            <MenuIcon />
+          </IconButton>
+          <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleMenuClose}>
+            <MenuItem onClick={() => handleMenuClick("/home")}>Home</MenuItem>
+            <MenuItem onClick={() => handleMenuClick("/products")}>My Products</MenuItem>
+            <MenuItem onClick={() => handleMenuClick("/comparisons")}>My Comparisons</MenuItem>
+            <MenuItem onClick={() => handleMenuClick("/addProduct")}>Add New Product</MenuItem>
+            <MenuItem onClick={() => handleMenuClick("/addComparison")}>Add New Comparison</MenuItem>
+
+            {/* Show Product Type option only if the user is an admin */}
+            {user?.role === "admin" && (
+              <MenuItem onClick={() => handleMenuClick("/admin/product-types")}>Product Type</MenuItem>
+            )}
+          </Menu>
+        </Box>
+
 
           {/* Logo y Nombre de la App */}
           <Box display="flex" alignItems="center">
@@ -66,7 +71,7 @@ function Header({ username, setUser }) {
           </Box>
 
           {/* Menú de Usuario */}
-          <UserMenu username={username} setUser={setUser} />
+          <UserMenu username={user.user_id} setUser={setUser} />
         </Toolbar>
       </Container>
     </AppBar>

@@ -21,41 +21,52 @@ function Login({ handleAuthChange }) {
   const [errors, setErrors] = useState({}); // Track login errors
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/home";
 
   const handleLogin = async () => {
     setErrors({}); // Reset errors before request
   
     try {
       const response = await login(email, password); // Call API
-      const { access_token, user_id, role } = response; // Destructure only what API returns
+      const { access_token, user_id, role } = response; // Destructure API response
   
-      // Store authentication details
+      if (!access_token || !user_id) {
+        throw new Error("Invalid response from server.");
+      }
+  
+      // Store authentication details securely
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("user", JSON.stringify({ user_id, email, role }));
   
-      setAuthToken(access_token);
+      setAuthToken(access_token); // Set the token globally
       handleAuthChange(true, { user_id, email, role });
   
-      console.log("🚀 Login successful! Redirecting to '/home'", { user_id, email, role });
-      navigate("/home");
+      console.log("Login successful! Redirecting to '/home'", { user_id, email, role });
+      navigate("/home"); // Redirect after login
     } catch (error) {
-      console.error("❌ Login error:", error);
+      console.error("Login error:", error);
   
       let fieldErrors = {};
   
-      if (Array.isArray(error)) {
-        error.forEach((err) => {
-          if (err.loc?.includes("email")) fieldErrors.email = err.msg;
-          if (err.loc?.includes("password")) fieldErrors.password = err.msg;
-        });
+      // Handle validation errors from API response
+      if (error.response?.data?.detail) {
+        const apiErrors = error.response.data.detail;
+  
+        if (Array.isArray(apiErrors)) {
+          apiErrors.forEach((err) => {
+            if (err.loc?.includes("email")) fieldErrors.email = err.msg;
+            if (err.loc?.includes("password")) fieldErrors.password = err.msg;
+          });
+        } else {
+          fieldErrors.general = apiErrors || "Invalid credentials. Please try again.";
+        }
       } else {
-        fieldErrors.general = error.msg || "Invalid credentials. Please try again.";
+        fieldErrors.general = "An error occurred. Please try again.";
       }
   
       setErrors(fieldErrors);
     }
   };
+  
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" bgcolor="#f4f4f9">

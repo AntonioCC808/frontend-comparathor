@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Button,
+  TextField,
   Table,
   TableBody,
   TableCell,
@@ -12,12 +12,13 @@ import {
   Paper,
   IconButton,
   Container,
+  Tooltip,
+  Grid,
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Tooltip,
-  Grid,
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
@@ -38,24 +39,34 @@ import InfoProductModal from "./modals/InfoProductModal";
 function MyProducts() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [productTypes, setProductTypes] = useState([]);  // ✅ Added this missing state
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);  // Add Product Modal
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Update Product Modal
-  const [isEditing, setIsEditing] = useState(false);
+  const [productTypes, setProductTypes] = useState([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState("table"); // Default to table view
+  const [viewMode, setViewMode] = useState("table");
+  const [nameFilter, setNameFilter] = useState("");
+  const [brandFilter, setBrandFilter] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [typeFilter, setTypeFilter] = useState("");
 
   useEffect(() => {
     loadProducts(setProducts);
   }, []);
 
+  // Filtering logic
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
+    product.brand.toLowerCase().includes(brandFilter.toLowerCase()) &&
+    (product.product_type || "").toLowerCase().includes(typeFilter.toLowerCase())
+  );
+
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
-      {/* Title & View Toggle */}
+      {/* Title, Search & View Toggle */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h3" sx={{ fontWeight: "bold", color: "#333", textTransform: "uppercase", letterSpacing: 1 }}>
+        <Typography variant="h3" sx={{ fontWeight: "bold", color: "#333" }}>
           My Products
         </Typography>
         <ToggleButtonGroup
@@ -77,62 +88,78 @@ function MyProducts() {
       {viewMode === "table" && (
         <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 4, overflow: "hidden" }}>
           <Table>
+            {/* Table Header */}
             <TableHead sx={{ backgroundColor: "#1976d2" }}>
               <TableRow>
                 <TableCell sx={{ color: "white", fontWeight: "bold", width: "10%" }}></TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Brand</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Type</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Score</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Actions</TableCell>
               </TableRow>
+              {/* Filters Row */}
+              <TableRow>
+                <TableCell></TableCell>
+                <TableCell>
+                  <TextField fullWidth placeholder="Search Name..." variant="outlined" size="small" value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} />
+                </TableCell>
+                <TableCell>
+                  <TextField fullWidth placeholder="Search Brand..." variant="outlined" size="small" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} />
+                </TableCell>
+                <TableCell>
+                  <TextField fullWidth placeholder="Search Type..." variant="outlined" size="small" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} />
+                </TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
+              </TableRow>
             </TableHead>
+
+            {/* Table Body */}
             <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <img
-                      src={product.image_base64}
-                      alt={product.name}
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "10px",
-                        objectFit: "cover",
-                        border: "2px solid #ddd",
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>{product.name}</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>{product.brand}</TableCell>
-                  <TableCell sx={{ textAlign: "center", fontWeight: 600, color: "#1976d2" }}>
-                    {product.score}
-                  </TableCell>
-                  <TableCell sx={{ textAlign: "center" }}>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <img src={product.image_base64} alt={product.name} style={{ width: "50px", height: "50px", borderRadius: "10px", objectFit: "cover", border: "2px solid #ddd" }} />
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{product.name}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{product.brand}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{product.product_type}</TableCell>
+                    <TableCell sx={{ textAlign: "center", fontWeight: 600, color: "#1976d2" }}>{product.score}</TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
                     <Tooltip title="View Details">
-                      <IconButton color="primary" onClick={() => handleViewProduct(product, setSelectedProduct, setIsInfoModalOpen)}>
-                        <Info />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Edit">
-                      <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsEditModalOpen)}>
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton color="error" onClick={() => handleDeleteConfirmation(product, setProductToDelete, setIsConfirmOpen)}>
-                        <Delete />
-                      </IconButton>
-                    </Tooltip>
+                    <IconButton color="primary" onClick={() => handleViewProduct(product, setSelectedProduct, setIsInfoModalOpen)}>
+                      <Info />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Edit">
+                    <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsEditModalOpen)}>
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton color="error" onClick={() => handleDeleteConfirmation(product, setProductToDelete, setIsConfirmOpen)}>
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ textAlign: "center", py: 4 }}>
+                    <Typography variant="h6" color="textSecondary">No products found.</Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       )}
 
-      {/* GRID VIEW */}
-      {viewMode === "grid" && (
+            {/* GRID VIEW */}
+            {viewMode === "grid" && (
         <Grid container spacing={3}>
           {products.map((product) => (
             <Grid item xs={12} sm={6} md={4} key={product.id}>
@@ -166,7 +193,7 @@ function MyProducts() {
                   Score: {product.score}
                 </Typography>
                 <Box mt={2}>
-                  <Tooltip title="View Details">
+                <Tooltip title="View Details">
                     <IconButton color="primary" onClick={() => handleViewProduct(product, setSelectedProduct, setIsInfoModalOpen)}>
                       <Info />
                     </IconButton>
