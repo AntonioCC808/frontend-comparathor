@@ -27,18 +27,22 @@ function Login({ handleAuthChange }) {
   
     try {
       const response = await login(email, password); // Call API
-      const { access_token, user_id, role } = response; // Destructure API response
+      console.log("Login Response:", response); // Debug API response
   
+      const { access_token, user_id, role } = response || {};
       if (!access_token || !user_id) {
         throw new Error("Invalid response from server.");
       }
   
-      // Store authentication details securely
+      // ✅ Store authentication details securely
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("user", JSON.stringify({ user_id, email, role }));
   
-      setAuthToken(access_token); // Set the token globally
-      handleAuthChange(true, { user_id, email, role });
+      // ✅ Set token globally for API requests
+      setAuthToken(access_token);
+  
+      // ✅ Pass the token to handleAuthChange
+      handleAuthChange(true, { user_id, email, role }, access_token);
   
       console.log("Login successful! Redirecting to '/home'", { user_id, email, role });
       navigate("/home"); // Redirect after login
@@ -47,7 +51,6 @@ function Login({ handleAuthChange }) {
   
       let fieldErrors = {};
   
-      // Handle validation errors from API response
       if (error.response?.data?.detail) {
         const apiErrors = error.response.data.detail;
   
