@@ -14,8 +14,10 @@ import {
   Button,
   Typography,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import { ArrowUpward, ArrowDownward } from "@mui/icons-material";
+import { Rating } from "@mui/material"; // Import Rating component
 import { fetchComparisonDetails } from "../../api/comparisons";
 
 function ComparisonModal({ open, onClose, comparison }) {
@@ -48,16 +50,8 @@ function ComparisonModal({ open, onClose, comparison }) {
     });
   });
 
-  // Determine the best values for each attribute
-  const bestValues = {};
-  [...uniqueAttributes].forEach((attribute) => {
-    bestValues[attribute] = Math.max(
-      ...products.map((product) => {
-        const metadata = product.product.product_metadata.find((meta) => meta.attribute === attribute);
-        return metadata ? parseFloat(metadata.score) : -Infinity;
-      })
-    );
-  });
+  // Find the maximum total score
+  const maxTotalScore = Math.max(...products.map((product) => product.product.score));
 
   // Sorting function based on selected column
   const sortedProducts = [...products].sort((a, b) => {
@@ -123,9 +117,7 @@ function ComparisonModal({ open, onClose, comparison }) {
                 ))}
 
                 {/* Total Score Column */}
-                <TableCell
-                  sx={{ color: "white", fontWeight: "bold", fontSize: "1rem", textAlign: "center" }}
-                >
+                <TableCell sx={{ color: "white", fontWeight: "bold", fontSize: "1rem", textAlign: "center" }}>
                   Total Score
                   <IconButton onClick={() => handleSort("score")} sx={{ color: "white" }}>
                     {sortConfig.key === "score" && sortConfig.descending ? <ArrowDownward /> : <ArrowUpward />}
@@ -136,43 +128,43 @@ function ComparisonModal({ open, onClose, comparison }) {
 
             {/* Table Body */}
             <TableBody>
-              {sortedProducts.map((product) => (
-                <TableRow key={product.id}>
-                  {/* Product Name */}
-                  <TableCell sx={{ fontWeight: "bold" }}>{product.product.name}</TableCell>
+              {sortedProducts.map((product) => {
+                const isBest = product.product.score === maxTotalScore;
 
-                  {/* Attribute Scores */}
-                  {[...uniqueAttributes].map((attribute) => {
-                    const metadata = product.product.product_metadata.find(
-                      (meta) => meta.attribute === attribute
-                    );
-                    const isBest = metadata && parseFloat(metadata.score) === bestValues[attribute];
+                return (
+                  <TableRow key={product.id} sx={{ backgroundColor: isBest ? "#d4edda" : "inherit" }}>
+                    {/* Product Name */}
+                    <TableCell sx={{ fontWeight: "bold" }}>{product.product.name}</TableCell>
 
-                    return (
-                      <TableCell
-                        key={attribute}
-                        sx={{
-                          textAlign: "center",
-                          backgroundColor: isBest ? "#d4edda" : "inherit", // Highlight best value
-                          fontWeight: isBest ? "bold" : "normal",
-                          borderRadius: 1,
-                          padding: "8px",
-                        }}
-                      >
-                        {metadata?.value || "N/A"}
-                        <Typography variant="caption" sx={{ color: "#555" }}>
-                          (Score: {metadata?.score || "N/A"})
-                        </Typography>
-                      </TableCell>
-                    );
-                  })}
+                    {/* Attribute Values with Stars Below */}
+                    {[...uniqueAttributes].map((attribute) => {
+                      const metadata = product.product.product_metadata.find(
+                        (meta) => meta.attribute === attribute
+                      );
+                      const value = metadata ? metadata.value : "N/A";
+                      const score = metadata ? parseFloat(metadata.score) : 0;
 
-                  {/* Total Score */}
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "center", color: "#1976d2" }}>
-                    {product.product.score}
-                  </TableCell>
-                </TableRow>
-              ))}
+                      return (
+                        <TableCell key={attribute} sx={{ textAlign: "center", padding: "8px" }}>
+                          <Typography variant="body1" fontWeight="bold">
+                            {value}
+                          </Typography>
+                          <Tooltip title={`Score: ${score}`}>
+                            <Rating value={score} precision={0.1} readOnly />
+                          </Tooltip>
+                        </TableCell>
+                      );
+                    })}
+
+                    {/* Total Score - Only Stars, No Text */}
+                    <TableCell sx={{ textAlign: "center" }}>
+                      <Tooltip title={`Score: ${product.product.score}`}>
+                        <Rating value={product.product.score} precision={0.1} readOnly />
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
