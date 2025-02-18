@@ -9,9 +9,9 @@ import {
   Link,
   InputAdornment,
   IconButton,
-  MenuItem,
   Alert,
 } from "@mui/material";
+import AppLogo from "../assets/app-logo.svg";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 function SignUp() {
@@ -79,7 +79,19 @@ function SignUp() {
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" bgcolor="#f4f4f9">
-      <Box bgcolor="white" padding={4} borderRadius={4} boxShadow="0px 4px 10px rgba(0, 0, 0, 0.2)" maxWidth="400px" width="100%">
+        <Box
+          bgcolor="white"
+          padding={4}
+          borderRadius={4}
+          boxShadow="0px 4px 10px rgba(0, 0, 0, 0.2)"
+          maxWidth="400px"
+          width="100%"
+          textAlign="center"
+        >
+        {/* App Logo */}
+        <Box mb={2}>
+          <img src={AppLogo} alt="App Logo" style={{ width: "120px", height: "auto" }} />
+        </Box>
         <Typography variant="h4" gutterBottom align="center">
           Create Account
         </Typography>

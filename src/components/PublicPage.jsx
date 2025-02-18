@@ -16,12 +16,20 @@ import {
   Chip,
   Grid,
   Checkbox,
-  ListItemText,
   Card,
   CardContent,
   Rating,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
+import { Info } from "@mui/icons-material";
 import { fetchProductTypes, fetchProducts } from "../api/products";
 import { useNavigate } from "react-router-dom";
 import ComparathorLogo from "../assets/app-logo.svg";
@@ -33,6 +41,8 @@ function PublicPage() {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: "score", descending: true });
   const [showComparison, setShowComparison] = useState(false);
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,6 +102,16 @@ function PublicPage() {
     return sortConfig.descending ? valueB - valueA : valueA - valueB;
   });
 
+  const handleOpenInfoModal = (type) => {
+    setSelectedType(type);
+    setInfoModalOpen(true);
+  };
+
+  const handleCloseInfoModal = () => {
+    setInfoModalOpen(false);
+    setSelectedType(null);
+  };
+
   return (
     <Container maxWidth="lg">
       {/* Branding Section */}
@@ -115,7 +135,7 @@ function PublicPage() {
           Compare products easily and make informed decisions.
         </Typography>
 
-        {/* 🚀 Login & Sign Up Buttons Moved Here */}
+        {/* Login & Sign Up Buttons Moved Here */}
         <Box mt={3} display="flex" gap={2} justifyContent="center">
           <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
             Login
@@ -125,6 +145,52 @@ function PublicPage() {
           </Button>
         </Box>
       </Box>
+
+             {/* Product Type Overview */}
+      <Grid container spacing={3} mt={4}>
+        {productTypes.map((type) => (
+          <Grid item xs={12} sm={6} md={4} key={type.id}>
+            <Card sx={{ transition: "0.3s", "&:hover": { boxShadow: 4, transform: "scale(1.02)" } }}>
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="h6" fontWeight="bold">{type.name}</Typography>
+                  <Tooltip title="View Attributes">
+                    <IconButton onClick={() => handleOpenInfoModal(type)} color="primary">
+                      <Info />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Typography variant="body2" color="textSecondary">
+                  {type.description}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Info Modal for Product Type Attributes */}
+      <Dialog open={infoModalOpen} onClose={handleCloseInfoModal} maxWidth="sm" fullWidth>
+        <DialogTitle>{selectedType?.name} - Attributes</DialogTitle>
+        <DialogContent dividers>
+          {selectedType ? (
+            <List>
+              {Object.entries(selectedType.metadata_schema || {}).map(([attr, type]) => (
+                <ListItem key={attr}>
+                  <ListItemText primary={attr} secondary={`Type: ${type}`} />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>No attributes available.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseInfoModal} color="primary" variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Product Type Selector */}
       <Box mt={3}>
