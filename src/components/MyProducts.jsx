@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -22,7 +23,7 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
-import { Edit, Delete, Add, Info, TableChart, GridView } from "@mui/icons-material";
+import { Edit, Delete, Add, Info, TableChart, GridView,   ArrowUpward, ArrowDownward } from "@mui/icons-material";
 import {
   loadProducts,
   handleEditProduct,
@@ -35,6 +36,24 @@ import {
 import UpdateProductModal from "./modals/UpdateProductModal";
 import NewProductModal from "./modals/NewProductModal";
 import InfoProductModal from "./modals/InfoProductModal";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+
+const fetchProductTypes = async () => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/product-types`, {
+      headers: getAuthHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product types:", error);
+    return [];
+  }
+};
 
 function MyProducts() {
   const [products, setProducts] = useState([]);
@@ -50,17 +69,37 @@ function MyProducts() {
   const [brandFilter, setBrandFilter] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [typeFilter, setTypeFilter] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc"); // Default to descending
+
 
   useEffect(() => {
     loadProducts(setProducts);
+    fetchProductTypes().then(setProductTypes);
   }, []);
 
-  // Filtering logic
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
-    product.brand.toLowerCase().includes(brandFilter.toLowerCase()) &&
-    (product.product_type || "").toLowerCase().includes(typeFilter.toLowerCase())
-  );
+  // Map products to include product_type_name
+const mappedProducts = products.map(product => ({
+  ...product,
+  product_type_name: productTypes.find(pt => pt.id === product.product_type_id)?.name || "Unknown"
+}));
+
+// Filtering logic
+const filteredProducts = mappedProducts.filter((product) =>
+  product.name.toLowerCase().includes(nameFilter.toLowerCase()) &&
+  product.brand.toLowerCase().includes(brandFilter.toLowerCase()) &&
+  (product.product_type_name || "").toLowerCase().includes(typeFilter.toLowerCase())
+);
+
+// Sorting logic (ensure filteredProducts exists first)
+const sortedProducts = [...filteredProducts].sort((a, b) =>
+  sortOrder === "asc" ? a.score - b.score : b.score - a.score
+);
+
+
+const toggleSortOrder = () => {
+  setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+};
+
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -95,7 +134,14 @@ function MyProducts() {
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Brand</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Type</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Score</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                  Score
+                  <IconButton onClick={toggleSortOrder} sx={{ color: "white", p: 0, width: 24, height: 24 }}>
+                    {sortOrder === "asc" ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />}
+                  </IconButton>
+                </Box>
+              </TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Actions</TableCell>
               </TableRow>
               {/* Filters Row */}
@@ -117,33 +163,35 @@ function MyProducts() {
 
             {/* Table Body */}
             <TableBody>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
+              {sortedProducts.length > 0 ? (
+                sortedProducts.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <img src={product.image_base64} alt={product.name} style={{ width: "50px", height: "50px", borderRadius: "10px", objectFit: "cover", border: "2px solid #ddd" }} />
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{product.name}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{product.brand}</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{product.product_type}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{product.product_type_name}</TableCell>
                     <TableCell sx={{ textAlign: "center", fontWeight: 600, color: "#1976d2" }}>{product.score}</TableCell>
                     <TableCell sx={{ textAlign: "center" }}>
-                    <Tooltip title="View Details">
-                    <IconButton color="primary" onClick={() => handleViewProduct(product, setSelectedProduct, setIsInfoModalOpen)}>
-                      <Info />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Edit">
-                    <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsEditModalOpen)}>
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton color="error" onClick={() => handleDeleteConfirmation(product, setProductToDelete, setIsConfirmOpen)}>
-                      <Delete />
-                    </IconButton>
-                  </Tooltip>
-                    </TableCell>
+                    <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                      <Tooltip title="View Details">
+                        <IconButton color="primary" onClick={() => handleViewProduct(product, setSelectedProduct, setIsInfoModalOpen)}>
+                          <Info fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit">
+                        <IconButton color="info" onClick={() => handleEditProduct(product, setSelectedProduct, setIsEditing, setIsEditModalOpen)}>
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton color="error" onClick={() => handleDeleteConfirmation(product, setProductToDelete, setIsConfirmOpen)}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
                   </TableRow>
                 ))
               ) : (
