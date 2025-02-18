@@ -22,6 +22,7 @@ import {
   DialogActions,
   ToggleButtonGroup,
   ToggleButton,
+  Rating
 } from "@mui/material";
 import { Edit, Delete, Add, Info, TableChart, GridView,   ArrowUpward, ArrowDownward } from "@mui/icons-material";
 import {
@@ -172,7 +173,9 @@ const toggleSortOrder = () => {
                     <TableCell sx={{ fontWeight: 600 }}>{product.name}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{product.brand}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{product.product_type_name}</TableCell>
-                    <TableCell sx={{ textAlign: "center", fontWeight: 600, color: "#1976d2" }}>{product.score}</TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
+                    <Rating value={product.score} precision={0.1} readOnly />
+                  </TableCell>
                     <TableCell sx={{ textAlign: "center" }}>
                     <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
                       <Tooltip title="View Details">
@@ -238,7 +241,7 @@ const toggleSortOrder = () => {
                 <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>{product.name}</Typography>
                 <Typography variant="body1" color="textSecondary">Brand: {product.brand}</Typography>
                 <Typography variant="body2" sx={{ fontWeight: "bold", mt: 1, color: "#1976d2" }}>
-                  Score: {product.score}
+                    <Rating value={product.score} precision={0.1} readOnly />
                 </Typography>
                 <Box mt={2}>
                 <Tooltip title="View Details">

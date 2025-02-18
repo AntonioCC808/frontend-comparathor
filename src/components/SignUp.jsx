@@ -163,6 +163,18 @@ function SignUp() {
           Sign Up
         </Button>
 
+         {/* Navigate to Public Page */}
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  fullWidth
+                  onClick={() => navigate("/")}
+                  sx={{ marginTop: 1 }}
+                >
+                  Continue Without Logging In
+                </Button>
+        
+
         <Typography variant="body2" align="center" marginTop={2}>
           Already have an account?{" "}
           <Link href="#" onClick={() => navigate("/login")} underline="hover">

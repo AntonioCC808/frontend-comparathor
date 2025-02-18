@@ -27,6 +27,7 @@ function AddProduct() {
     name: "",
     brand: "",
     score: "",
+    price: "", // New Price Field
     image_base64: "",
     product_type: "",
     product_metadata: [],
@@ -43,6 +44,21 @@ function AddProduct() {
     };
     loadProductTypes();
   }, []);
+
+  // Function to handle score validation
+  const handleScoreChange = (e) => {
+    let value = parseFloat(e.target.value);
+    if (value < 0) value = 0;
+    if (value > 5) value = 5;
+    setSelectedProduct({ ...selectedProduct, score: value });
+  };
+
+  // Function to handle price validation (ensures non-negative values)
+  const handlePriceChange = (e) => {
+    let value = parseFloat(e.target.value);
+    if (value < 0) value = 0;
+    setSelectedProduct({ ...selectedProduct, price: value });
+  };
 
   return (
     <Container maxWidth="sm">
@@ -103,13 +119,25 @@ function AddProduct() {
           value={selectedProduct.brand}
           onChange={(e) => setSelectedProduct({ ...selectedProduct, brand: e.target.value })}
         />
+        
+        {/* Price Field in Euros (€) */}
         <TextField
-          label="Overall Score"
+          label="Price (€)"
+          fullWidth
+          margin="dense"
+          type="number"
+          value={selectedProduct.price}
+          onChange={handlePriceChange}
+        />
+
+        {/* Overall Score (0-5) */}
+        <TextField
+          label="Overall Score (0-5)"
           fullWidth
           margin="dense"
           type="number"
           value={selectedProduct.score}
-          onChange={(e) => setSelectedProduct({ ...selectedProduct, score: e.target.value })}
+          onChange={handleScoreChange}
         />
 
         {/* Image Upload Section */}
@@ -187,12 +215,17 @@ function AddProduct() {
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
-                      label="Score"
+                      label="Score (0-5)"
                       fullWidth
                       margin="dense"
                       type="number"
                       value={meta.score || ""}
-                      onChange={(e) => handleAttributeChange(index, "score", e.target.value, setSelectedProduct)}
+                      onChange={(e) => {
+                        let value = parseFloat(e.target.value);
+                        if (value < 0) value = 0;
+                        if (value > 5) value = 5;
+                        handleAttributeChange(index, "score", value, setSelectedProduct);
+                      }}
                     />
                   </Grid>
                 </React.Fragment>

@@ -19,6 +19,8 @@ import {
   ListItemText,
   Card,
   CardContent,
+  Rating,
+  Tooltip,
 } from "@mui/material";
 import { fetchProductTypes, fetchProducts } from "../api/products";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +31,7 @@ function PublicPage() {
   const [selectedProductType, setSelectedProductType] = useState("");
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: "score", descending: true });
   const [showComparison, setShowComparison] = useState(false);
   const navigate = useNavigate();
 
@@ -71,6 +74,24 @@ function PublicPage() {
     }
   };
 
+  // Extract unique attributes dynamically
+  const uniqueAttributes = new Set();
+  products.forEach((product) => {
+    product?.product_metadata?.forEach(({ attribute }) => {
+      uniqueAttributes.add(attribute);
+    });
+  });
+
+  // Sorting function based on selected column
+  const sortedProducts = [...selectedProducts].map((productId) =>
+    products.find((p) => p.id === productId)
+  ).sort((a, b) => {
+    const key = sortConfig.key;
+    const valueA = key === "score" ? a.score : (a.product_metadata.find(meta => meta.attribute === key)?.score || 0);
+    const valueB = key === "score" ? b.score : (b.product_metadata.find(meta => meta.attribute === key)?.score || 0);
+    return sortConfig.descending ? valueB - valueA : valueA - valueB;
+  });
+
   return (
     <Container maxWidth="lg">
       {/* Branding Section */}
@@ -93,30 +114,17 @@ function PublicPage() {
         <Typography variant="subtitle1" color="textSecondary" textAlign="center">
           Compare products easily and make informed decisions.
         </Typography>
-      </Box>
 
-      {/* Product Type Overview */}
-      <Grid container spacing={3} mt={4}>
-        {productTypes.map((type) => (
-          <Grid item xs={12} sm={6} md={4} key={type.id}>
-            <Card sx={{ transition: "0.3s", "&:hover": { boxShadow: 4 } }}>
-              <CardContent>
-                <Typography variant="h6" fontWeight="bold">
-                  {type.name}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {type.description}
-                </Typography>
-                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                  {Object.keys(type.metadata_schema || {}).map((attr) => (
-                    <Chip key={attr} label={attr} variant="outlined" />
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+        {/* 🚀 Login & Sign Up Buttons Moved Here */}
+        <Box mt={3} display="flex" gap={2} justifyContent="center">
+          <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+            Login
+          </Button>
+          <Button variant="contained" color="secondary" onClick={() => navigate("/signup")}>
+            Sign Up
+          </Button>
+        </Box>
+      </Box>
 
       {/* Product Type Selector */}
       <Box mt={3}>
@@ -174,47 +182,68 @@ function PublicPage() {
       )}
 
       {/* Comparison Table */}
-      {showComparison && (
-        <TableContainer component={Paper} sx={{ boxShadow: 2, marginTop: 2 }}>
-          <Table stickyHeader>
-            <TableHead sx={{ backgroundColor: "#1976d2" }}>
-              <TableRow>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Attribute</TableCell>
-                {selectedProducts.map((productId) => (
-                  <TableCell key={productId} sx={{ color: "white", fontWeight: "bold" }}>
-                    {products.find((p) => p.id === productId)?.name}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {selectedProducts.map((productId) => (
-                <TableRow key={productId} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" } }}>
-                  <TableCell sx={{ fontWeight: "bold" }}>{products.find((p) => p.id === productId)?.name}</TableCell>
-                  <TableCell>Details Here</TableCell>
-                </TableRow>
+    {showComparison && (
+      <TableContainer component={Paper} sx={{ boxShadow: 2, marginTop: 2 }}>
+        <Table>
+          {/* Table Head */}
+          <TableHead sx={{ backgroundColor: "#1976d2" }}>
+            <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                Product
+              </TableCell>
+              {[...uniqueAttributes].map((attribute) => (
+                <TableCell key={attribute} sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                  {attribute}
+                </TableCell>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                Price (€)
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                Total Score
+              </TableCell>
+            </TableRow>
+          </TableHead>
 
-      {/* Call to Action for Login or Sign Up */}
-      <Box mt={4} display="flex" justifyContent="center">
-        <Card sx={{ padding: 3, borderRadius: 3, boxShadow: 2, textAlign: "center", width: 300 }}>
-          <Typography variant="h6" fontWeight="bold">
-            Join to Save Your Comparisons!
-          </Typography>
-          <Box mt={2} display="flex" gap={2} justifyContent="center">
-            <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
-              Login
-            </Button>
-            <Button variant="contained" color="secondary" onClick={() => navigate("/signup")}>
-              Sign Up
-            </Button>
-          </Box>
-        </Card>
-      </Box>
+          {/* Table Body */}
+          <TableBody>
+            {sortedProducts.map((product) => (
+              <TableRow key={product.id}>
+                {/* Product Name */}
+                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>{product.name}</TableCell>
+
+                {/* Attribute Values */}
+                {[...uniqueAttributes].map((attribute) => {
+                  const metadata = product.product_metadata.find(meta => meta.attribute === attribute);
+                  const value = metadata ? metadata.value : "N/A";
+                  const score = metadata ? parseFloat(metadata.score) : 0;
+                  return (
+                    <TableCell key={attribute} sx={{ textAlign: "center", verticalAlign: "middle" }}>
+                      <Typography variant="body1" fontWeight="bold">{value}</Typography>
+                      <Tooltip title={`Score: ${score}`}>
+                        <Rating value={score} precision={0.1} readOnly />
+                      </Tooltip>
+                    </TableCell>
+                  );
+                })}
+
+                {/* Price Row */}
+                <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "primary.main" }}>
+                  €{product.price ? product.price.toFixed(2) : "N/A"}
+                </TableCell>
+
+                {/* Total Score Row */}
+                <TableCell sx={{ textAlign: "center" }}>
+                  <Tooltip title={`Total Score: ${product.score}`}>
+                    <Rating value={product.score} precision={0.1} readOnly />
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    )}
     </Container>
   );
 }

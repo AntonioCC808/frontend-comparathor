@@ -59,6 +59,7 @@ function ComparisonModal({ open, onClose, comparison }) {
 
     const getValue = (product) => {
       if (key === "score") return product.product.score;
+      if (key === "price") return product.product.price;
       if (key === "name") return product.product.name.toLowerCase();
       const metadata = product.product.product_metadata.find((meta) => meta.attribute === key);
       return metadata ? parseFloat(metadata.score) : -Infinity;
@@ -83,7 +84,7 @@ function ComparisonModal({ open, onClose, comparison }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
       <DialogTitle>
         <Typography variant="h5" fontWeight="bold">
           Comparison: {comparison.title}
@@ -100,6 +101,21 @@ function ComparisonModal({ open, onClose, comparison }) {
                   Product
                   <IconButton onClick={() => handleSort("name")} sx={{ color: "white" }}>
                     {sortConfig.key === "name" && sortConfig.descending ? <ArrowDownward /> : <ArrowUpward />}
+                  </IconButton>
+                </TableCell>
+
+                {/* Price Column */}
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    textAlign: "center",
+                  }}
+                >
+                  Price (€)
+                  <IconButton onClick={() => handleSort("price")} sx={{ color: "white" }}>
+                    {sortConfig.key === "price" && sortConfig.descending ? <ArrowDownward /> : <ArrowUpward />}
                   </IconButton>
                 </TableCell>
 
@@ -135,6 +151,11 @@ function ComparisonModal({ open, onClose, comparison }) {
                   <TableRow key={product.id} sx={{ backgroundColor: isBest ? "#d4edda" : "inherit" }}>
                     {/* Product Name */}
                     <TableCell sx={{ fontWeight: "bold" }}>{product.product.name}</TableCell>
+
+                    {/* Price */}
+                    <TableCell sx={{ textAlign: "center", fontWeight: "bold", color: "#1976d2" }}>
+                      €{product.product.price.toFixed(2)}
+                    </TableCell>
 
                     {/* Attribute Values with Stars Below */}
                     {[...uniqueAttributes].map((attribute) => {
