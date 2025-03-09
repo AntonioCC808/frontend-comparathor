@@ -145,6 +145,7 @@ export const handleDeleteConfirmation = (product, setProductToDelete, setIsConfi
 
 // Handle delete product
 export const handleDeleteConfirmed = async (productToDelete, products, setProducts, setIsConfirmOpen, setProductToDelete) => {
+  console.log("Product to delete:", productToDelete); // Debugging
   if (!productToDelete) return;
   try {
     await deleteProduct(productToDelete.id);

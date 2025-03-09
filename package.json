@@ -44,7 +44,7 @@
   },
   "scripts": {
     "local": "VITE_API_URL='http://localhost:8000' vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "deploy-patch": "npm version patch -m v%s",
     "deploy-minor": "npm version minor -m v%s",

@@ -312,7 +312,9 @@ const toggleSortOrder = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsConfirmOpen(false)} color="secondary">Cancel</Button>
-          <Button onClick={handleDeleteConfirmed} color="error">Delete</Button>
+          <Button onClick={() => handleDeleteConfirmed(productToDelete, products, setProducts, setIsConfirmOpen, setProductToDelete)} color="error">
+            Delete
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

@@ -91,7 +91,7 @@ function Configuration() {
               src={user.profilePicture || "/default-profile.png"} // Default image
               sx={{ width: 80, height: 80, mb: 2 }}
             />
-            <Typography variant="h6">{user.username || "Unknown User"}</Typography>
+            <Typography variant="h6">{user.user_id || "Unknown User"}</Typography>
             <Typography variant="body2" color="textSecondary">
               {user.email}
             </Typography>
