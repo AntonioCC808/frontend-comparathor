@@ -266,28 +266,6 @@ const toggleSortOrder = () => {
         </Grid>
       )}
 
-
-      {/* Add Product Button */}
-      <Box textAlign="center" mt={4}>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add />}
-          onClick={() => handleAddProduct(setSelectedProduct, setIsEditing, setIsAddModalOpen, setProductTypes)}
-        >
-          Add Product
-        </Button>
-      </Box>
-
-      {/* Add Product Modal */}
-      <NewProductModal
-        open={isAddModalOpen} // ✅ Only opens when adding a new product
-        onClose={() => setIsAddModalOpen(false)}
-        setProducts={setProducts}
-        productTypes={productTypes} // ✅ Pass product types here
-        setProductTypes={setProductTypes} // ✅ Pass the function as well
-      />
-
       {/* Update Product Modal */}
       <UpdateProductModal
         open={isEditModalOpen} // ✅ Only opens when editing an existing product

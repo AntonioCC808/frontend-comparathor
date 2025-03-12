@@ -28,7 +28,7 @@ const NewProductModal = ({ open, onClose, setProducts }) => {
     name: "",
     brand: "",
     score: "",
-    price: "", // ✅ Added price field
+    price: "",
     image_base64: "",
     product_type: "",
     product_metadata: [],
@@ -46,7 +46,7 @@ const NewProductModal = ({ open, onClose, setProducts }) => {
     loadProductTypes();
   }, []);
 
-  // ✅ Function to validate score (0 to 5)
+  // Function to validate score (0 to 5)
   const handleScoreChange = (e) => {
     let value = parseFloat(e.target.value);
     if (value < 0) value = 0;
@@ -54,7 +54,7 @@ const NewProductModal = ({ open, onClose, setProducts }) => {
     setSelectedProduct((prev) => ({ ...prev, score: value }));
   };
 
-  // ✅ Function to validate price (no negatives)
+  // Function to validate price (no negatives)
   const handlePriceChange = (e) => {
     let value = parseFloat(e.target.value);
     if (value < 0) value = 0;
@@ -104,7 +104,7 @@ const NewProductModal = ({ open, onClose, setProducts }) => {
           }
         />
 
-        {/* ✅ Price Field in Euros (€) */}
+        {/* Price Field in Euros (€) */}
         <TextField
           label="Price (€)"
           fullWidth
@@ -114,7 +114,7 @@ const NewProductModal = ({ open, onClose, setProducts }) => {
           onChange={handlePriceChange}
         />
 
-        {/* ✅ Overall Score (0-5) */}
+        {/* Overall Score (0-5) */}
         <TextField
           label="Overall Score (0-5)"
           fullWidth

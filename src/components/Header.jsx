@@ -26,7 +26,6 @@ import appLogo from "../assets/app-logo.svg";
 function Header({ user, setUser }) {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width:900px)"); // Detect mobile
 
   const toggleDrawer = (open) => (event) => {
     if (event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) return;
@@ -37,6 +36,8 @@ function Header({ user, setUser }) {
     navigate(route);
     setDrawerOpen(false);
   };
+
+  console.log("User in Header:", user);
 
   return (
     <AppBar position="static" sx={{ backgroundColor: "#1976d2", boxShadow: 3, width: "100%" }}>
@@ -67,14 +68,14 @@ function Header({ user, setUser }) {
               ))}
 
               {/* Admin Only Option */}
-              {user?.role === "admin" && (
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => handleMenuClick("/admin/product-types")}>
-                    <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>
-                    <ListItemText primary="Product Type" />
-                  </ListItemButton>
-                </ListItem>
-              )}
+              {user && user.role === "admin" && (
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => handleMenuClick("/admin/product-types")}>
+                  <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>
+                  <ListItemText primary="Product Type" />
+                </ListItemButton>
+              </ListItem>
+            )}
             </List>
           </Box>
         </Drawer>

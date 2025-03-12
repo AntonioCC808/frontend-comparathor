@@ -30,6 +30,7 @@ export const addProduct = async (product) => {
       name: product.name,
       brand: product.brand,
       score: product.score,
+      price: product.price,
       product_type_id: product.product_type,
       image_base64: product.image_base64 || DEFAULT_IMAGE_BASE64,
       product_metadata: product.product_metadata.map((meta) => ({

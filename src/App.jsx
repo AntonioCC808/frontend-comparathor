@@ -8,6 +8,8 @@ import SignUp from "./components/SignUp";
 import Home from "./components/Home";
 import PublicPage from "./components/PublicPage"; 
 import { getCurrentUser, logout } from "./api/auth";
+import { CircularProgress, Box } from "@mui/material";
+
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -15,19 +17,21 @@ function App() {
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const firstRender = useRef(true); // Track first render
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         let token = localStorage.getItem("access_token");
+  
         if (!token) {
           console.warn("No access token found. Logging out...");
           logout();
           setUser(null);
           return;
         }
-
+  
         const currentUser = await getCurrentUser();
         if (currentUser) {
           const storedUser = localStorage.getItem("user");
@@ -35,18 +39,28 @@ function App() {
             setUser(currentUser);
             localStorage.setItem("user", JSON.stringify(currentUser));
           }
+        } else {
+          console.warn("No user returned. Logging out...");
+          logout();
+          setUser(null);
         }
       } catch (error) {
         console.error("Error fetching user:", error);
         logout();
         setUser(null);
+      } finally {
+        setLoading(false); // Ensure loading is false in all cases
       }
     };
-
-    fetchUser();
+  
+    if (firstRender.current) {
+      console.log("First render, fetching user...");
+      firstRender.current = false;
+      fetchUser();
+    }
   }, []);
 
-  // ✅ Only redirect **after login**, avoiding infinite loop
+  //  Only redirect **after login**, avoiding infinite loop
   useEffect(() => {
     console.log("User state changed:", user);
     if (firstRender.current) {
@@ -77,6 +91,21 @@ function App() {
     }
   };
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/*" element={<AppContent user={user} handleAuthChange={handleAuthChange} />} />
@@ -84,12 +113,13 @@ function App() {
   );
 }
 
+
 function AppContent({ user, handleAuthChange }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isAuthPage = location.pathname === "/login" || location.pathname === "/signup";
 
-  // ✅ Prevent redirect loop: Only redirect if **not already on /home**
+  // Prevent redirect loop: Only redirect if **not already on /home**
   useEffect(() => {
     console.log("Navigating check:", { user, location: location.pathname });
     if (user && isAuthPage && location.pathname !== "/home") {
