@@ -191,6 +191,7 @@ function PublicPage() {
         </DialogActions>
       </Dialog>
 
+
       {/* Product Type Selector */}
       <Box mt={3}>
         <TextField
@@ -211,6 +212,41 @@ function PublicPage() {
           ))}
         </TextField>
       </Box>
+
+       {/* Product Table */}
+       <Typography variant="h4" fontWeight="bold" mt={4} mb={2}>
+        Available Products
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 4, mt: 4, mb: 6 }}>
+        <Table>
+          <TableHead sx={{ backgroundColor: "#1976d2" }}>
+            <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Brand</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Type</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                  Score
+                  
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell>{product.name}</TableCell>
+                <TableCell>{product.brand}</TableCell>
+                <TableCell>{productTypes.find((pt) => pt.id === product.product_type_id)?.name || "Unknown"}</TableCell>
+                <TableCell sx={{ textAlign: "center" }}>
+                  <Rating value={product.score} precision={0.1} readOnly />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Product Selection */}
       {selectedProductType && (
