@@ -80,3 +80,30 @@ export const deleteComparison = async (comparisonId) => {
     throw error;
   }
 };
+
+// Update a comparison (Requires Authentication)
+export const updateComparison = async (comparisonId, updatedData) => {
+  const token = localStorage.getItem("access_token");
+  console.log("Updating comparison ID:", comparisonId);
+
+  if (!token) {
+    console.error("No authentication token found!");
+    throw new Error("Unauthorized: No token available");
+  }
+
+  // Remove the id parameter from updatedData
+  const { id, ...dataWithoutId } = updatedData;
+  console.log("Updated Data without ID:", dataWithoutId);
+
+  try {
+    const response = await axios.put(`${API_BASE_URL}/${comparisonId}`, dataWithoutId, {
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+
+    console.log(`Comparison ${comparisonId} updated successfully`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating comparison ${comparisonId}:`, error.response?.data || error.message);
+    throw error;
+  }
+};

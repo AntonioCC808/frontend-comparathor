@@ -12,24 +12,30 @@ import {
   IconButton,
   Box,
   TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
 } from "@mui/material";
-import { Delete, Visibility } from "@mui/icons-material";
-import { fetchComparisons, deleteComparison } from "../api/comparisons";
-import ComparisonModal from "./modals/ComparisonModal"; 
+import { Delete, Visibility, Edit } from "@mui/icons-material";
+import { fetchComparisons, deleteComparison, updateComparison } from "../api/comparisons";
 
 function MyComparisons() {
   const [comparisons, setComparisons] = useState([]);
   const [filteredComparisons, setFilteredComparisons] = useState([]);
   const [selectedComparison, setSelectedComparison] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [editData, setEditData] = useState({ title: "", description: "" });
 
   useEffect(() => {
     const loadComparisons = async () => {
       try {
         const data = await fetchComparisons();
         setComparisons(data);
-        setFilteredComparisons(data); // Initialize with all comparisons
+        setFilteredComparisons(data);
       } catch (error) {
         console.error("Error fetching comparisons:", error);
       }
@@ -38,7 +44,6 @@ function MyComparisons() {
   }, []);
 
   useEffect(() => {
-    // Filtering logic: search by Title or Description
     const filtered = comparisons.filter(
       (comparison) =>
         comparison.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
@@ -63,13 +68,43 @@ function MyComparisons() {
     setModalOpen(true);
   };
 
+  const handleOpenEditModal = (comparison) => {
+    setEditData({ title: comparison.title, description: comparison.description });
+    setSelectedComparison(comparison);
+    setEditModalOpen(true);
+  };
+
+  const handleEditChange = (e) => {
+    setEditData({ ...editData, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const updatedComparison = {
+        title: editData.title,
+        description: editData.description,
+      };
+  
+      await updateComparison(selectedComparison.id, updatedComparison);
+  
+      const updatedComparisons = comparisons.map((c) =>
+        c.id === selectedComparison.id ? { ...c, ...updatedComparison } : c
+      );
+  
+      setComparisons(updatedComparisons);
+      setFilteredComparisons(updatedComparisons);
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating comparison:", error);
+    }
+  };
+
   return (
     <Container maxWidth="md">
       <Typography variant="h4" gutterBottom align="center">
         MY COMPARISONS
       </Typography>
 
-      {/* Search Bar */}
       <Box display="flex" justifyContent="center" mb={2}>
         <TextField
           variant="outlined"
@@ -102,6 +137,9 @@ function MyComparisons() {
                       <IconButton color="primary" onClick={() => handleOpenModal(comparison)}>
                         <Visibility />
                       </IconButton>
+                      <IconButton color="primary" onClick={() => handleOpenEditModal(comparison)}>
+                        <Edit />
+                      </IconButton>
                       <IconButton color="error" onClick={() => handleDelete(comparison.id)}>
                         <Delete />
                       </IconButton>
@@ -120,13 +158,17 @@ function MyComparisons() {
         </Table>
       </TableContainer>
 
-      {selectedComparison && (
-        <ComparisonModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          comparison={selectedComparison}
-        />
-      )}
+      <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+        <DialogTitle>Edit Comparison</DialogTitle>
+        <DialogContent>
+          <TextField label="Title" fullWidth name="title" value={editData.title} onChange={handleEditChange} margin="dense" />
+          <TextField label="Description" fullWidth name="description" value={editData.description} onChange={handleEditChange} margin="dense" multiline rows={3} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditModalOpen(false)}>Cancel</Button>
+          <Button onClick={handleSaveEdit} color="primary" variant="contained">Save</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
