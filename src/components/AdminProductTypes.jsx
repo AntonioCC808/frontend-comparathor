@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -81,94 +82,9 @@ const AdminProductTypes = ({ token }) => {
 
   return (
     <Container maxWidth="md">
-      <Typography variant="h4" gutterBottom align="center">
-        Manage Product Types
+      <Typography variant="h4" gutterBottom align="left">
+        Product type management
       </Typography>
-
-      {/* Form to add a new product type */}
-      <Paper sx={{ padding: 3, marginBottom: 3, borderRadius: 2, boxShadow: 2 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Name"
-              variant="outlined"
-              value={newProductType.name}
-              onChange={(e) => setNewProductType({ ...newProductType, name: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Description"
-              variant="outlined"
-              value={newProductType.description}
-              onChange={(e) => setNewProductType({ ...newProductType, description: e.target.value })}
-            />
-          </Grid>
-        </Grid>
-
-        {/* Add Metadata Attributes */}
-        <Typography variant="h6" sx={{ mt: 3 }}>
-          Add Metadata Attributes
-        </Typography>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Attribute Name"
-              variant="outlined"
-              value={newAttribute.name}
-              onChange={(e) => setNewAttribute({ ...newAttribute, name: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <TextField
-              fullWidth
-              label="Type (e.g., string, integer)"
-              variant="outlined"
-              value={newAttribute.type}
-              onChange={(e) => setNewAttribute({ ...newAttribute, type: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={2}>
-            <Button variant="contained" color="secondary" fullWidth onClick={handleAddAttribute}>
-              Add Attribute
-            </Button>
-          </Grid>
-        </Grid>
-
-        {/* Display Added Attributes as Chips */}
-        <Box mt={2}>
-          {Object.keys(newProductType.metadata_schema).length > 0 && (
-            <>
-              <Typography variant="subtitle1">Attributes:</Typography>
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                {Object.entries(newProductType.metadata_schema).map(([key, value]) => (
-                  <Chip
-                    key={key}
-                    label={`${key}: ${value}`}
-                    variant="outlined"
-                    onDelete={() => handleRemoveAttribute(key)}
-                  />
-                ))}
-              </Box>
-            </>
-          )}
-        </Box>
-
-        {/* Single Button to Add Product Type with Attributes */}
-        <Box mt={3} display="flex" justifyContent="center">
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddCircle />}
-            onClick={handleAddProductType}
-          >
-            Add Product Type
-          </Button>
-        </Box>
-      </Paper>
 
       {/* Product Types Table */}
       <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
@@ -205,6 +121,101 @@ const AdminProductTypes = ({ token }) => {
           </TableBody>
         </Table>
       </TableContainer>
+
+       {/* Form to add a new product type */}
+
+       <Typography variant="h5" gutterBottom align="left" sx={{ padding: 3, marginTop: 4, borderRadius: 2 }}>
+        Create new product type
+      </Typography>
+       <Paper sx={{ padding: 3, borderRadius: 2, boxShadow: 2 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              label="Name"
+              variant="outlined"
+              value={newProductType.name}
+              onChange={(e) => setNewProductType({ ...newProductType, name: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              label="Description"
+              variant="outlined"
+              value={newProductType.description}
+              onChange={(e) => setNewProductType({ ...newProductType, description: e.target.value })}
+            />
+          </Grid>
+        </Grid>
+
+
+        {/* Add Metadata Attributes */}
+        <Typography variant="h6" sx={{ mt: 4 }}>
+          Add Metadata Attributes
+        </Typography>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              label="Attribute Name"
+              variant="outlined"
+              value={newAttribute.name}
+              onChange={(e) => setNewAttribute({ ...newAttribute, name: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={4}>
+          <TextField
+            select
+            fullWidth
+            label="Type"
+            value={newAttribute.type}
+            onChange={(e) => setNewAttribute({ ...newAttribute, type: e.target.value })}
+          >
+            <MenuItem value="string">String</MenuItem>
+            <MenuItem value="integer">Integer</MenuItem>
+            <MenuItem value="float">Float</MenuItem>
+            <MenuItem value="boolean">Boolean</MenuItem>
+          </TextField>
+          </Grid>
+          <Grid item xs={2}>
+          <Button onClick={handleAddAttribute}>
+          <AddCircle />
+            </Button>
+          </Grid>
+        </Grid>
+
+        {/* Display Added Attributes as Chips */}
+        <Box mt={2}>
+          {Object.keys(newProductType.metadata_schema).length > 0 && (
+            <>
+              <Typography variant="subtitle1">Attributes:</Typography>
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {Object.entries(newProductType.metadata_schema).map(([key, value]) => (
+                  <Chip
+                    key={key}
+                    label={`${key}: ${value}`}
+                    variant="outlined"
+                    onDelete={() => handleRemoveAttribute(key)}
+                  />
+                ))}
+              </Box>
+            </>
+          )}
+        </Box>
+
+        {/* Single Button to Add Product Type with Attributes */}
+        <Box mt={3} display="flex" justifyContent="left">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddCircle />}
+            onClick={handleAddProductType}
+          >
+            Add Product Type
+          </Button>
+        </Box>
+      </Paper>
     </Container>
   );
 };
