@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Alert,
   IconButton,
   TextField,
   Button,
@@ -28,8 +29,8 @@ const AdminProductTypes = ({ token }) => {
   const [newProductType, setNewProductType] = useState({ name: "", description: "", metadata_schema: {} });
   const [newAttribute, setNewAttribute] = useState({ name: "", type: "" });
   const [userRoles, setUserRoles] = useState({});
-  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     loadProductTypes();
@@ -69,10 +70,15 @@ const AdminProductTypes = ({ token }) => {
       }));
       await updateUsersRoles(usersRolesArray);
       loadUsers();
-      setSuccessMessage("User roles updated successfully!"); // Set message
-      setTimeout(() => setSuccessMessage(""), 3000); // Remove after 3 seconds
+      
+      setSuccessMessage("User roles updated successfully!");
+      setErrorMessage(""); // Clear error message
+      setTimeout(() => setSuccessMessage(""), 3000); // Auto-hide after 3 seconds
     } catch (error) {
       console.error("Error updating user roles:", error);
+      setErrorMessage("Failed to update user roles.");
+      setSuccessMessage(""); // Clear success message
+      setTimeout(() => setErrorMessage(""), 3000); // Auto-hide after 3 seconds
     }
   };
 
@@ -274,19 +280,29 @@ const AdminProductTypes = ({ token }) => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                 <Select
-                    value={userRoles[user.user_id] ?? "User"} // Ensure fallback value
-                    onChange={(e) => setUserRoles({ ...userRoles, [user.user_id]: e.target.value })}
-                    fullWidth
-                  >
-                    <MenuItem value="User">User</MenuItem>
-                    <MenuItem value="Admin">Admin</MenuItem>
-                  </Select>
+                value={userRoles[user.user_id] ?? "User"}
+                onChange={(e) => {
+                  const newRole = e.target.value;
+                  if (userRoles[user.user_id] === "User" && newRole === "Admin") {
+                    setUserRoles({ ...userRoles, [user.user_id]: newRole });
+                  }
+                }}
+                fullWidth
+                disabled={userRoles[user.user_id] === "Admin"} // Disable if already Admin
+              >
+                <MenuItem value="User">User</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+              </Select>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Success & Error Messages */}
+    {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+    {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
 
       <Box mt={3} mb={3} display="flex" justifyContent="left">
         <Button variant="contained" color="primary" onClick={handleSaveRoles}>
