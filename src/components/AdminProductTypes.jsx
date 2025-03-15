@@ -14,28 +14,65 @@ import {
   TextField,
   Button,
   Box,
+  Select,
   Chip,
   Grid,
 } from "@mui/material";
 import { Delete, AddCircle } from "@mui/icons-material";
 import { fetchProductTypes } from "../api/products";
-import { addProductType, deleteProductType } from "../api/admin";
+import { addProductType, deleteProductType, fetchUsers, updateUsersRoles } from "../api/admin";
 
 const AdminProductTypes = ({ token }) => {
   const [productTypes, setProductTypes] = useState([]);
+  const [users, setUsers] = useState([]);
   const [newProductType, setNewProductType] = useState({ name: "", description: "", metadata_schema: {} });
   const [newAttribute, setNewAttribute] = useState({ name: "", type: "" });
+  const [userRoles, setUserRoles] = useState({});
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     loadProductTypes();
+    loadUsers();
   }, []);
-
   const loadProductTypes = async () => {
     try {
       const data = await fetchProductTypes();
       setProductTypes(data);
     } catch (error) {
       console.error("Error fetching product types:", error);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const data = await fetchUsers(token);
+      setUsers(data);
+  
+      const roles = data.reduce((acc, user) => {
+        const normalizedRole = user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase();
+        acc[user.user_id] = normalizedRole; 
+        return acc;
+      }, {});
+  
+      setUserRoles(roles);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  const handleSaveRoles = async () => {
+    try {
+      const usersRolesArray = users.map(user => ({
+        user_id: user.user_id,
+        role: userRoles[user.user_id]?.toLowerCase() || user.role.toLowerCase(),
+      }));
+      await updateUsersRoles(usersRolesArray);
+      loadUsers();
+      setSuccessMessage("User roles updated successfully!"); // Set message
+      setTimeout(() => setSuccessMessage(""), 3000); // Remove after 3 seconds
+    } catch (error) {
+      console.error("Error updating user roles:", error);
     }
   };
 
@@ -82,7 +119,7 @@ const AdminProductTypes = ({ token }) => {
 
   return (
     <Container maxWidth="md">
-      <Typography variant="h4" gutterBottom align="left">
+      <Typography variant="h4" gutterBottom align="left" mt={3}>
         Product type management
       </Typography>
 
@@ -216,6 +253,46 @@ const AdminProductTypes = ({ token }) => {
           </Button>
         </Box>
       </Paper>
+
+      <Typography variant="h4" gutterBottom align="left" mt={7}>
+        User Management
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+        <Table>
+          <TableHead sx={{ backgroundColor: "#1976d2" }}>
+            <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>User ID</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Email</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Role</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.user_id}>
+                <TableCell>{user.user_id}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                <Select
+                    value={userRoles[user.user_id] ?? "User"} // Ensure fallback value
+                    onChange={(e) => setUserRoles({ ...userRoles, [user.user_id]: e.target.value })}
+                    fullWidth
+                  >
+                    <MenuItem value="User">User</MenuItem>
+                    <MenuItem value="Admin">Admin</MenuItem>
+                  </Select>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Box mt={3} mb={3} display="flex" justifyContent="left">
+        <Button variant="contained" color="primary" onClick={handleSaveRoles}>
+          Save Changes
+        </Button>
+      </Box>
     </Container>
   );
 };

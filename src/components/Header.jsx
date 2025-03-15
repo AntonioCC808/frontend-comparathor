@@ -72,7 +72,7 @@ function Header({ user, setUser }) {
               <ListItem disablePadding>
                 <ListItemButton onClick={() => handleMenuClick("/admin/product-types")}>
                   <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>
-                  <ListItemText primary="Product Type" />
+                  <ListItemText primary="Administrator" />
                 </ListItemButton>
               </ListItem>
             )}
